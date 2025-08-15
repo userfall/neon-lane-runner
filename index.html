@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kabir & Françoise - Neon Lane Runner</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body, html {
+    margin:0;
+    padding:0;
+    font-family:'Orbitron', sans-serif;
+    background: linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+    color:#0ff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+    overflow:hidden;
+}
+
+.login-card {
+    background: rgba(0,0,0,0.85);
+    border: 2px solid #0ff;
+    border-radius: 15px;
+    padding: 40px;
+    width: 350px;
+    text-align: center;
+    box-shadow: 0 0 25px #0ff;
+    animation: neonPulse 2s infinite alternate;
+}
+
+.login-card h1 {
+    margin-bottom: 20px;
+    font-size: 28px;
+    text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+}
+
+.login-card input {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    text-align: center;
+}
+
+.login-card button {
+    width: 85%;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #0ff;
+    color: #000;
+    box-shadow: 0 0 15px #0ff;
+    transition: all 0.2s ease;
+}
+
+.login-card button:hover {
+    background: #0aa;
+    box-shadow: 0 0 25px #0ff inset, 0 0 30px #0ff;
+}
+
+#message {
+    margin-top: 10px;
+    font-size: 14px;
+    min-height: 18px;
+}
+
+@keyframes neonPulse {
+    0% { box-shadow: 0 0 10px #0ff, 0 0 20px #0ff; }
+    50% { box-shadow: 0 0 20px #0ff, 0 0 40px #0ff; }
+    100% { box-shadow: 0 0 10px #0ff, 0 0 20px #0ff; }
+}
+</style>
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/auth.js"></script>
+</head>
+<body>
+<div class="login-card">
+    <h1>Kabir & Françoise</h1>
+
+    <input type="text" id="loginName" placeholder="Pseudo ou Email">
+    <input type="password" id="loginPassword" placeholder="Mot de passe">
+    <button id="loginBtn">Se connecter</button>
+
+    <input type="text" id="signupName" placeholder="Pseudo">
+    <input type="password" id="signupPassword" placeholder="Mot de passe">
+    <button id="signupBtn">S’inscrire</button>
+
+    <p id="message"></p>
+</div>
+
+<script type="module">
+import { loginUser, signupUser } from './js/auth.js';
+
+const msgEl = document.getElementById('message');
+
+document.getElementById('loginBtn').addEventListener('click', async () => {
+    const pseudo = document.getElementById('loginName').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    if(!pseudo || !password){
+        msgEl.textContent = "Veuillez remplir tous les champs !";
+        msgEl.style.color = "red";
+        return;
+    }
+    try {
+        const user = await loginUser(pseudo, password);
+        sessionStorage.setItem('userName', user.displayName || user.email || pseudo);
+        msgEl.textContent = "Connexion réussie !";
+        msgEl.style.color = "lime";
+        window.location.href = 'game.html';
+    } catch (err) {
+        msgEl.textContent = err.message || "Erreur lors de la connexion";
+        msgEl.style.color = "red";
+    }
+});
+
+document.getElementById('signupBtn').addEventListener('click', async () => {
+    const pseudo = document.getElementById('signupName').value.trim();
+    const password = document.getElementById('signupPassword').value.trim();
+    if(!pseudo || !password){
+        msgEl.textContent = "Veuillez remplir tous les champs !";
+        msgEl.style.color = "red";
+        return;
+    }
+    try {
+        await signupUser(pseudo, password);
+        msgEl.textContent = "Inscription réussie ! Connectez-vous.";
+        msgEl.style.color = "lime";
+    } catch (err) {
+        msgEl.textContent = err.message || "Erreur lors de l'inscription";
+        msgEl.style.color = "red";
+    }
+});
+</script>
+</body>
+</html>

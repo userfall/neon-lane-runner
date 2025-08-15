@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Lane Runner - Admin</title>
+<link rel="stylesheet" href="css/style.css">
+<script type="module" src="js/admin.js"></script>
+<script type="module" src="js/settings.js"></script>
+</head>
+<body>
+<h1>ADMIN PANEL</h1>
+<button id="startCompBtn">Lancer la Compétition</button>
+<button id="stopCompBtn">Arrêter la Compétition</button>
+
+<h3>Leaderboard Top 50</h3>
+<table id="scoresTable">
+  <tr><th>Utilisateur</th><th>Score</th><th>Action</th></tr>
+</table>
+
+<h3>Paramètres du Jeu</h3>
+<label>Vitesse: <input type="range" id="speedSlider" min="1" max="15"></label>
+<label>Spawn Rate: <input type="range" id="spawnSlider" min="10" max="100"></label>
+<label>Vies: <input type="number" id="livesInput" min="1" max="10"></label>
+<label>Musique: <input type="checkbox" id="musicCheckbox" checked></label>
+<label>FX: <input type="checkbox" id="fxCheckbox" checked></label>
+<button id="saveParams">Sauvegarder</button>
+
+<p id="adminMessage"></p>
+</body>
+</html>

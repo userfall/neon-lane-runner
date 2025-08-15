@@ -1,0 +1,48 @@
+body {
+    font-family: Arial, sans-serif;
+    background: black;
+    color: #0ff;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2em;
+    color: #0f0;
+}
+
+#adminPanel {
+    width: 80%;
+    margin: auto;
+    padding: 20px;
+    border: 2px solid #0ff;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.8);
+}
+
+section {
+    margin: 20px 0;
+}
+
+.btn {
+    background: #0ff;
+    color: black;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn.red { background: #f33; color: white; }
+.btn.green { background: #3f3; color: black; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #0ff;
+    padding: 8px;
+}
