@@ -1,4 +1,4 @@
-import { saveScore, loadLeaderboard, setupLeaderboardClose } from './leaderboard.js';
+
 import { gameSettings, loadSettings } from './settings.js';
 
 // 🎵 SONS
