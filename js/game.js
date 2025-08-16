@@ -31,6 +31,7 @@ const paramPanel = document.getElementById('paramPanel');
 const victoryOverlay = document.getElementById('victoryOverlay');
 const replayBtn = document.getElementById('replayBtn');
 const fireworksCanvas = document.getElementById('fireworksCanvas');
+const statsPanel = document.getElementById('statsPanel');
 
 // 🧩 Variables de jeu
 let player, obstacles, boss;
@@ -66,7 +67,6 @@ fxToggle.addEventListener('click', () => {
   fxToggle.textContent = gameSettings.fxOn ? "FX ON" : "FX OFF";
 });
 statsBtn.addEventListener('click', () => {
-  const statsPanel = document.getElementById("statsPanel");
   statsPanel.style.display = statsPanel.style.display === "none" ? "block" : "none";
 });
 replayBtn.addEventListener('click', () => {
@@ -98,6 +98,7 @@ function startGame() {
   lives = gameSettings.lives;
   gameSettings.gameSpeed = 2.5;
   gameSettings.spawnRate = 25;
+  fireworksLaunched = false;
   obstacles = [];
   player = { x: canvas.width / 2 - 25, y: canvas.height - 100, width: 50, height: 50 };
   boss = { x: Math.random() * canvas.width, y: -100, width: 60, height: 60 };
@@ -109,9 +110,10 @@ function startGame() {
     sounds.music.play();
   }
 
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground();
   updateLocalStats();
   animateCountdown(3, () => requestAnimationFrame(gameLoop));
-  fireworksLaunched = false;
 }
 
 // 📊 Statistiques locales
@@ -123,10 +125,33 @@ function updateLocalStats() {
   if (score > best) {
     localStorage.setItem("bestScore", score);
     best = score;
+    showNewRecord(score);
   }
 
   document.getElementById("gamesPlayed").textContent = played + 1;
   document.getElementById("bestScore").textContent = best;
+}
+
+// 🎉 Nouveau record
+function showNewRecord(score) {
+  const overlay = document.createElement('div');
+  overlay.textContent = `🔥 Nouveau record : ${score} pts ! 🔥`;
+  overlay.style.cssText = `
+    position:absolute;
+    top:30%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:#111;
+    color:#ff0;
+    font-size:40px;
+    padding:20px 30px;
+    border-radius:12px;
+    box-shadow:0 0 20px #ff0;
+    z-index:1000;
+    animation: pulse 1s infinite;
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.remove(), 3000);
 }
 
 // ⏳ Compte à rebours
@@ -230,13 +255,13 @@ function endGame() {
   alert("Game Over ! Score: " + score);
 
   if (score >= 2000 && !fireworksLaunched) {
-  fireworksLaunched = true;
-  victoryOverlay.style.display = 'flex';
-  launchFireworks();
-}
+    fireworksLaunched = true;
+    victoryOverlay.style.display = 'flex';
+    launchFireworks();
+  }
 
   updateLocalStats();
-    gameSettings.gameSpeed = 2.5;
+  gameSettings.gameSpeed = 2.5;
   gameSettings.spawnRate = 25;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
