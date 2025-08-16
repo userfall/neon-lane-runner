@@ -30,16 +30,13 @@
   <script type="module" src="js/game.js"></script>
 </head>
 <body>
-  <!-- 🎮 Canvas du jeu -->
   <canvas id="gameCanvas"></canvas>
 
-  <!-- 🧠 HUD -->
   <div id="hud">
     <div id="score">Score: 0</div>
     <div id="lives">Vies: 3</div>
   </div>
 
-  <!-- ⚙️ Panneau de paramètres -->
   <div id="paramPanel">
     <button id="musicToggle">Musique ON</button>
     <button id="fxToggle">FX ON</button>
@@ -47,10 +44,9 @@
     <button id="startBtn">START</button>
   </div>
 
-  <!-- 🏆 Classement -->
   <div id="leaderboardDiv" style="display:none;">
     <div class="leader-card">
-      <h2 style="margin:0 0 8px 0; color:#0ff">🏆 Classement Général</h2>
+      <h2>🏆 Classement Général</h2>
       <div id="rankingBoard">Chargement...</div>
       <div style="display:flex; gap:8px; margin-top:10px;">
         <button class="btn primary" onclick="loadLeaderboard()">↻ Rafraîchir</button>
@@ -60,7 +56,6 @@
     </div>
   </div>
 
-  <!-- 🎉 Victoire -->
   <div id="victoryOverlay" style="display:none;">
     <canvas id="fireworksCanvas"></canvas>
     <p>🎉 Bravo ! Tu as atteint un score incroyable !</p>
