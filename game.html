@@ -7,15 +7,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/game.css" />
 
-  <!-- Firebase compat -->
+  <!-- Firebase compat (si tu veux garder l'auth plus tard) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCbNweC0aD8f_OGvbvmBVNSKbaMP_A4khI",
       authDomain: "neonlanerunner.firebaseapp.com",
-      databaseURL: "https://neonlanerunner-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "neonlanerunner",
       storageBucket: "neonlanerunner.appspot.com",
       messagingSenderId: "916907926117",
@@ -26,36 +24,29 @@
 
   <!-- Modules du jeu -->
   <script type="module" src="js/settings.js"></script>
-  <script type="module" src="js/leaderboard.js"></script>
   <script type="module" src="js/game.js"></script>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
 
+  <!-- 🧠 HUD -->
   <div id="hud">
     <div id="score">Score: 0</div>
     <div id="lives">Vies: 3</div>
-  </div>
-
-  <div id="paramPanel">
-    <button id="musicToggle">Musique ON</button>
-    <button id="fxToggle">FX ON</button>
-    <button id="showLeaderboardBtn">Voir le classement</button>
-    <button id="startBtn">START</button>
-  </div>
-
-  <div id="leaderboardDiv" style="display:none;">
-    <div class="leader-card">
-      <h2>🏆 Classement Général</h2>
-      <div id="rankingBoard">Chargement...</div>
-      <div style="display:flex; gap:8px; margin-top:10px;">
-        <button class="btn primary" onclick="loadLeaderboard()">↻ Rafraîchir</button>
-        <button class="btn" id="closeLeaderboardBtn">Retour au jeu</button>
-      </div>
-      <div id="myRank" style="margin-top:10px;color:#fff"></div>
+    <div id="stats">
+      Parties jouées : <span id="gamesPlayed">0</span> |
+      Meilleur score : <span id="bestScore">0</span>
     </div>
   </div>
 
+  <!-- ⚙️ Panneau de paramètres -->
+  <div id="paramPanel">
+    <button id="musicToggle">Musique ON</button>
+    <button id="fxToggle">FX ON</button>
+    <button id="startBtn">START</button>
+  </div>
+
+  <!-- 🎉 Victoire -->
   <div id="victoryOverlay" style="display:none;">
     <canvas id="fireworksCanvas"></canvas>
     <p>🎉 Bravo ! Tu as atteint un score incroyable !</p>
