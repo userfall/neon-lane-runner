@@ -47,24 +47,36 @@ let gamePaused = false;
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
-// 📱 Contrôles swipe mobile
-let touchStartX = null;
+// 📱 Swipe mobile fluide
+let swipeStartX = null;
+let swipeStartY = null;
+let swipeStartTime = null;
+
 canvas.addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX;
+  swipeStartX = e.touches[0].clientX;
+  swipeStartY = e.touches[0].clientY;
+  swipeStartTime = Date.now();
 });
+
 canvas.addEventListener('touchend', e => {
-  const touchEndX = e.changedTouches[0].clientX;
-  const deltaX = touchEndX - touchStartX;
+  const swipeEndX = e.changedTouches[0].clientX;
+  const swipeEndY = e.changedTouches[0].clientY;
+  const deltaX = swipeEndX - swipeStartX;
+  const deltaY = swipeEndY - swipeStartY;
+  const duration = Date.now() - swipeStartTime;
+
+  if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+  if (Math.abs(deltaX) < 30 || duration > 500) return;
+
   keys['ArrowLeft'] = false;
   keys['ArrowRight'] = false;
-  if (Math.abs(deltaX) > 30) {
-    if (deltaX < 0) {
-      keys['ArrowLeft'] = true;
-      setTimeout(() => keys['ArrowLeft'] = false, 200);
-    } else {
-      keys['ArrowRight'] = true;
-      setTimeout(() => keys['ArrowRight'] = false, 200);
-    }
+
+  if (deltaX < 0) {
+    keys['ArrowLeft'] = true;
+    setTimeout(() => keys['ArrowLeft'] = false, 150);
+  } else {
+    keys['ArrowRight'] = true;
+    setTimeout(() => keys['ArrowRight'] = false, 150);
   }
 });
 
@@ -121,7 +133,7 @@ function startGame() {
   gamePaused = false;
   obstacles = [];
   player = { x: canvas.width / 2 - 25, y: canvas.height - 100, width: 50, height: 50 };
-  boss = { x: Math.random() * canvas.width, y: -100, width: 60, height: 60 };
+  boss = { x: Math.random() * canvas.width, y: -100, width: 40, height: 40 }; // 👾 Boss plus petit
   bgY = 0;
   paramPanel.style.display = 'none';
   pauseBtn.style.display = 'block';
@@ -209,9 +221,13 @@ function gameLoop() {
   ctx.fillRect(player.x, player.y, player.width, player.height);
 
   moveBoss();
-
-  if (Math.random() * 100 < gameSettings.spawnRate / 20) {
-    obstacles.push({ x: Math.random() * (canvas.width - 30), y: -30, width: 30, height: 30 });
+    if (Math.random() * 100 < gameSettings.spawnRate / 20) {
+    obstacles.push({
+      x: Math.random() * (canvas.width - 30),
+      y: -30,
+      width: 30,
+      height: 30
+    });
   }
 
   obstacles.forEach((o, i) => {
@@ -219,9 +235,13 @@ function gameLoop() {
     ctx.fillStyle = "#f00";
     ctx.fillRect(o.x, o.y, o.width, o.height);
 
-    if (player.x < o.x + o.width && player.x + player.width > o.x &&
-        player.y < o.y + o.height && player.y + player.height > o.y) {
-            obstacles.splice(i, 1);
+    if (
+      player.x < o.x + o.width &&
+      player.x + player.width > o.x &&
+      player.y < o.y + o.height &&
+      player.y + player.height > o.y
+    ) {
+      obstacles.splice(i, 1);
       lives--;
       if (gameSettings.fxOn) sounds.hit.play();
     }
@@ -306,8 +326,12 @@ function moveBoss() {
   ctx.fillStyle = "#ff0";
   ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
 
-  if (player.x < boss.x + boss.width && player.x + player.width > boss.x &&
-      player.y < boss.y + boss.height && player.y + player.height > boss.y) {
+  if (
+    player.x < boss.x + boss.width &&
+    player.x + player.width > boss.x &&
+    player.y < boss.y + boss.height &&
+    player.y + player.height > boss.y
+  ) {
     lives--;
     boss.y = -100;
   }
@@ -355,3 +379,5 @@ function launchFireworks() {
 
   animate();
 }
+
+  
