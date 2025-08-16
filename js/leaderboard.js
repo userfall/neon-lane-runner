@@ -1,11 +1,8 @@
-// leaderboard.js — Firebase compat
-
 function sanitizeKey(s) {
   if (!s) return "anon";
   return String(s).replace(/[.#$\[\]\/]/g, "_");
 }
 
-// 💾 Sauvegarder le score
 export function saveScore(score) {
   const user = firebase.auth().currentUser;
   if (!user) return;
@@ -27,7 +24,6 @@ export function saveScore(score) {
   }).catch(e => console.warn("Erreur lecture score", e));
 }
 
-// 📊 Charger le classement
 export function loadLeaderboard() {
   const boardEl = document.getElementById("rankingBoard");
   const myRankEl = document.getElementById("myRank");
@@ -61,7 +57,6 @@ export function loadLeaderboard() {
       html += "</ol>";
       boardEl.innerHTML = html;
 
-      // Rang personnel
       const idx = entries.findIndex(e => sanitizeKey(e.pseudo) === sanitizeKey(current));
       if (idx >= 0) {
         myRankEl.innerHTML = `Ton rang : <b>#${idx + 1}</b> — score : <b>${entries[idx].score}</b>`;
@@ -75,10 +70,8 @@ export function loadLeaderboard() {
     });
 }
 
-// 🔁 Rafraîchir manuellement
 window.loadLeaderboard = loadLeaderboard;
 
-// 🔙 Fermer le panneau
 export function setupLeaderboardClose() {
   const closeBtn = document.getElementById("closeLeaderboardBtn");
   const overlay = document.getElementById("leaderboardDiv");
