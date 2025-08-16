@@ -34,17 +34,20 @@
   <div id="hud">
     <div id="score">Score: 0</div>
     <div id="lives">Vies: 3</div>
-    <div id="stats">
-      Parties jouées : <span id="gamesPlayed">0</span> |
-      Meilleur score : <span id="bestScore">0</span>
-    </div>
   </div>
 
   <!-- ⚙️ Panneau de paramètres -->
   <div id="paramPanel">
     <button id="musicToggle">Musique ON</button>
     <button id="fxToggle">FX ON</button>
+    <button id="statsBtn">Stats</button>
     <button id="startBtn">START</button>
+  </div>
+
+  <!-- 📊 Panneau de stats -->
+  <div id="statsPanel" style="display:none; position:absolute; bottom:80px; left:50%; transform:translateX(-50%); background:#111; padding:10px 20px; border-radius:10px; color:#0ff; font-size:18px; box-shadow:0 0 10px #0ff; z-index:100;">
+    Parties jouées : <span id="gamesPlayed">0</span><br>
+    Meilleur score : <span id="bestScore">0</span>
   </div>
 
   <!-- 🎉 Victoire -->
@@ -53,8 +56,5 @@
     <p>🎉 Bravo ! Tu as atteint un score incroyable !</p>
     <button id="replayBtn">Rejouer</button>
   </div>
-
-  <!-- 🌌 Fond animé -->
-  <div id="backgroundOverlay"></div>
 </body>
 </html>
