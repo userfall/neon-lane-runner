@@ -224,22 +224,37 @@ function updateLevel() {
 }
 
 function showLevelUp(level) {
+  // Injecte l'animation CSS une seule fois
+  if (!document.getElementById('levelUpStyle')) {
+    const style = document.createElement('style');
+    style.id = 'levelUpStyle';
+    style.textContent = `
+      @keyframes fadeOutLevel {
+        0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // Crée l'élément visuel
   const overlay = document.createElement('div');
   overlay.textContent = "Niveau " + level;
-  overlay.style.cssText = `
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #0f0;
-    font-size: 60px;
-    font-weight: bold;
-    text-shadow: 0 0 20px #0f0, 0 0 40px #0f0;
-    z-index: 1000;
-    pointer-events: none;
-    animation: fadeOut 1.5s ease forwards;
-  `;
+  overlay.style.position = "absolute";
+  overlay.style.top = "40%";
+  overlay.style.left = "50%";
+  overlay.style.transform = "translate(-50%, -50%)";
+  overlay.style.color = "#0f0";
+  overlay.style.fontSize = "60px";
+  overlay.style.fontWeight = "bold";
+  overlay.style.textShadow = "0 0 20px #0f0, 0 0 40px #0f0";
+  overlay.style.zIndex = "1000";
+  overlay.style.pointerEvents = "none";
+  overlay.style.animation = "fadeOutLevel 1.5s ease forwards";
+
   document.body.appendChild(overlay);
+
+  // Supprime après animation
   setTimeout(() => overlay.remove(), 1500);
 }
 
