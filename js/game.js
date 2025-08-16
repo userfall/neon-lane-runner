@@ -1,4 +1,3 @@
-// game.js
 import { saveScore, loadLeaderboard, setupLeaderboardClose } from './leaderboard.js';
 import { gameSettings, loadSettings } from './settings.js';
 
@@ -61,7 +60,7 @@ startBtn.addEventListener('click', startGame);
 musicToggle.addEventListener('click', () => {
   gameSettings.musicOn = !gameSettings.musicOn;
   musicToggle.textContent = gameSettings.musicOn ? "Musique ON" : "Musique OFF";
-  gameSettings.musicOn ? fadeInMusic() : fadeOutMusic();
+  gameSettings.musicOn ? sounds.music.play() : sounds.music.pause();
 });
 fxToggle.addEventListener('click', () => {
   gameSettings.fxOn = !gameSettings.fxOn;
@@ -79,7 +78,8 @@ window.addEventListener('load', async () => {
   await loadSettings();
   lives = gameSettings.lives;
   drawBackground();
-  if (gameSettings.musicOn) fadeInMusic();
+  document.getElementById("gamesPlayed").textContent = localStorage.getItem("gamesPlayed") || 0;
+  document.getElementById("bestScore").textContent = localStorage.getItem("bestScore") || 0;
 });
 window.addEventListener('resize', resizeCanvas);
 
@@ -89,41 +89,37 @@ function resizeCanvas() {
   canvas.height = window.innerHeight;
 }
 
-// 🔊 Fonctions musique
-function fadeInMusic() {
-  if (sounds.music.paused) sounds.music.play();
-  let vol = 0;
-  const fade = setInterval(() => {
-    vol += 0.05;
-    sounds.music.volume = Math.min(vol, 0.5);
-    if (vol >= 0.5) clearInterval(fade);
-  }, 100);
-}
-function fadeOutMusic() {
-  let vol = sounds.music.volume;
-  const fade = setInterval(() => {
-    vol -= 0.05;
-    sounds.music.volume = Math.max(vol, 0);
-    if (vol <= 0) {
-      sounds.music.pause();
-      sounds.music.volume = 0.5;
-      clearInterval(fade);
-    }
-  }, 100);
-}
-
 // 🚀 Démarrer le jeu
 function startGame() {
   gameStarted = true;
   score = 0;
   level = 1;
   lives = gameSettings.lives;
+  gameSettings.gameSpeed = 5;     // difficulté initiale
+  gameSettings.spawnRate = 50;
   obstacles = [];
   player = { x: canvas.width / 2 - 25, y: canvas.height - 100, width: 50, height: 50 };
   boss = { x: Math.random() * canvas.width, y: -100, width: 60, height: 60 };
   bgY = 0;
   paramPanel.style.display = 'none';
+
+  if (gameSettings.musicOn) sounds.music.play();
+  updateLocalStats();
   animateCountdown(3, () => requestAnimationFrame(gameLoop));
+}
+
+// 📊 Statistiques locales
+function updateLocalStats() {
+  let played = Number(localStorage.getItem("gamesPlayed")) || 0;
+  localStorage.setItem("gamesPlayed", played + 1);
+
+  let best = Number(localStorage.getItem("bestScore")) || 0;
+  if (score > best) {
+    localStorage.setItem("bestScore", score);
+  }
+
+  document.getElementById("gamesPlayed").textContent = played + 1;
+  document.getElementById("bestScore").textContent = Math.max(score, best);
 }
 
 // ⏳ Compte à rebours
@@ -189,6 +185,55 @@ function gameLoop() {
   else requestAnimationFrame(gameLoop);
 }
 
+// 🆙 Niveau
+function updateLevel() {
+  if (score % 500 === 0 && score !== 0) {
+    level++;
+    gameSettings.gameSpeed += 1;
+    gameSettings.spawnRate += 10;
+    if (gameSettings.fxOn) sounds.levelup.play();
+    showLevelUp(level);
+  }
+}
+
+function showLevelUp(level) {
+  const overlay = document.createElement('div');
+  overlay.textContent = "Niveau " + level;
+  overlay.style.cssText = `
+    position:absolute;
+    top:40%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    color:#0f0;
+    font-size:60px;
+    z-index:1000;
+    text-shadow:0 0 20px #0f0;
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.remove(), 1500);
+}
+
+// 🧨 Fin du jeu
+function endGame() {
+  gameStarted = false;
+  paramPanel.style.display = 'flex';
+  if (gameSettings.fxOn) sounds.gameover.play();
+
+  alert("Game Over ! Score: " + score);
+
+  if (score >= 2000) {
+    victoryOverlay.style.display = 'flex';
+    launchFireworks();
+  }
+
+  saveScore(score);
+  updateLocalStats();
+  gameSettings.gameSpeed = 5;
+  gameSettings.spawnRate = 50;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground();
+}
+
 // 🎨 Fond défilant
 function drawBackground() {
   ctx.drawImage(backgroundImg, 0, bgY - canvas.height, canvas.width, canvas.height);
@@ -210,71 +255,6 @@ function moveBoss() {
   }
 
   if (boss.y > canvas.height) boss.y = -100;
-}
-
-// 🆙 Niveau
-function updateLevel() {
-  if (score % 500 === 0 && score !== 0) {
-    level++;
-    gameSettings.gameSpeed += 1;
-    gameSettings.spawnRate += 10;
-    if (gameSettings.fxOn) sounds.levelup.play();
-    showLevelUp(level);
-  }
-}
-
-function showLevelUp(level) {
-  // Injecte l'animation CSS une seule fois
-  if (!document.getElementById('levelUpStyle')) {
-    const style = document.createElement('style');
-    style.id = 'levelUpStyle';
-    style.textContent = `
-      @keyframes fadeOutLevel {
-        0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  // Crée l'élément visuel
-  const overlay = document.createElement('div');
-  overlay.textContent = "Niveau " + level;
-  overlay.style.position = "absolute";
-  overlay.style.top = "40%";
-  overlay.style.left = "50%";
-  overlay.style.transform = "translate(-50%, -50%)";
-  overlay.style.color = "#0f0";
-  overlay.style.fontSize = "60px";
-  overlay.style.fontWeight = "bold";
-  overlay.style.textShadow = "0 0 20px #0f0, 0 0 40px #0f0";
-  overlay.style.zIndex = "1000";
-  overlay.style.pointerEvents = "none";
-  overlay.style.animation = "fadeOutLevel 1.5s ease forwards";
-
-  document.body.appendChild(overlay);
-
-  // Supprime après animation
-  setTimeout(() => overlay.remove(), 1500);
-}
-
-// 🧨 Fin du jeu
-function endGame() {
-  gameStarted = false;
-  paramPanel.style.display = 'flex';
-  if (gameSettings.musicOn) fadeInMusic();
-  if (gameSettings.fxOn) sounds.gameover.play();
-
-  alert("Game Over ! Score: " + score);
-
-  if (score >= 2000) {
-    victoryOverlay.style.display = 'flex';
-    launchFireworks();
-  }
-
-  saveScore(score);
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawBackground();
 }
 
 // 🎆 Feux d’artifice
@@ -317,5 +297,3 @@ function launchFireworks() {
 
   animate();
 }
-
-   
