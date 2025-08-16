@@ -1,223 +1,9 @@
-
-import { gameSettings, loadSettings } from './settings.js';
-
-// 🎵 SONS
-const sounds = {
-  hit: new Audio('./assets/sounds/hit.wav'),
-  music: new Audio('./assets/sounds/music.mp3'),
-  gameover: new Audio('./assets/sounds/gameover.wav'),
-  levelup: new Audio('./assets/sounds/levelup.wav')
-};
-sounds.music.loop = true;
-sounds.music.volume = 0.5;
-
-// 🎮 CANVAS
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-resizeCanvas();
-
-// 📸 FOND
-const backgroundImg = new Image();
-backgroundImg.src = './assets/images/background.png';
-let bgY = 0;
-
-// 🧠 Éléments HUD
-const scoreEl = document.getElementById('score');
-const livesEl = document.getElementById('lives');
-const startBtn = document.getElementById('startBtn');
-const musicToggle = document.getElementById('musicToggle');
-const fxToggle = document.getElementById('fxToggle');
-const showLeaderboardBtn = document.getElementById('showLeaderboardBtn');
-const leaderboardOverlay = document.getElementById('leaderboardOverlay');
-const paramPanel = document.getElementById('paramPanel');
-const victoryOverlay = document.getElementById('victoryOverlay');
-const replayBtn = document.getElementById('replayBtn');
-const fireworksCanvas = document.getElementById('fireworksCanvas');
-
-// 🧩 Variables de jeu
-let player, obstacles, boss;
-let score = 0, lives = 3, level = 1;
-let keys = {};
-let gameStarted = false;
-
-// 🎮 Contrôles clavier
-document.addEventListener('keydown', e => keys[e.key] = true);
-document.addEventListener('keyup', e => keys[e.key] = false);
-
-// 📱 Contrôles tactiles
-canvas.addEventListener('touchstart', e => {
-  const touchX = e.touches[0].clientX;
-  if (touchX < canvas.width / 2) keys['ArrowLeft'] = true;
-  else keys['ArrowRight'] = true;
-});
-canvas.addEventListener('touchend', () => {
-  keys['ArrowLeft'] = false;
-  keys['ArrowRight'] = false;
-});
-
-// 🎮 Boutons HUD
-startBtn.addEventListener('click', startGame);
-musicToggle.addEventListener('click', () => {
-  gameSettings.musicOn = !gameSettings.musicOn;
-  musicToggle.textContent = gameSettings.musicOn ? "Musique ON" : "Musique OFF";
-  gameSettings.musicOn ? sounds.music.play() : sounds.music.pause();
-});
-fxToggle.addEventListener('click', () => {
-  gameSettings.fxOn = !gameSettings.fxOn;
-  fxToggle.textContent = gameSettings.fxOn ? "FX ON" : "FX OFF";
-});
-showLeaderboardBtn.addEventListener('click', async () => await loadLeaderboard());
-setupLeaderboardClose();
-replayBtn.addEventListener('click', () => {
-  victoryOverlay.style.display = 'none';
-  startGame();
-});
-
-// 🧠 Initialisation
-window.addEventListener('load', async () => {
-  await loadSettings();
-  lives = gameSettings.lives;
-  drawBackground();
-  document.getElementById("gamesPlayed").textContent = localStorage.getItem("gamesPlayed") || 0;
-  document.getElementById("bestScore").textContent = localStorage.getItem("bestScore") || 0;
-});
-window.addEventListener('resize', resizeCanvas);
-
-// 📐 Resize canvas
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-
-// 🚀 Démarrer le jeu
-function startGame() {
-  gameStarted = true;
-  score = 0;
-  level = 1;
-  lives = gameSettings.lives;
-  gameSettings.gameSpeed = 5;     // difficulté initiale
-  gameSettings.spawnRate = 50;
-  obstacles = [];
-  player = { x: canvas.width / 2 - 25, y: canvas.height - 100, width: 50, height: 50 };
-  boss = { x: Math.random() * canvas.width, y: -100, width: 60, height: 60 };
-  bgY = 0;
-  paramPanel.style.display = 'none';
-
-  if (gameSettings.musicOn) sounds.music.play();
-  updateLocalStats();
-  animateCountdown(3, () => requestAnimationFrame(gameLoop));
-}
-
-// 📊 Statistiques locales
-function updateLocalStats() {
-  let played = Number(localStorage.getItem("gamesPlayed")) || 0;
-  localStorage.setItem("gamesPlayed", played + 1);
-
-  let best = Number(localStorage.getItem("bestScore")) || 0;
-  if (score > best) {
-    localStorage.setItem("bestScore", score);
-  }
-
-  document.getElementById("gamesPlayed").textContent = played + 1;
-  document.getElementById("bestScore").textContent = Math.max(score, best);
-}
-
-// ⏳ Compte à rebours
-function animateCountdown(num, callback) {
-  const overlay = document.createElement('div');
-  overlay.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);color:#0ff;font-size:100px;display:flex;align-items:center;justify-content:center;z-index:1000;";
-  document.body.appendChild(overlay);
-  let count = num;
-  overlay.textContent = count;
-  const interval = setInterval(() => {
-    count--;
-    overlay.textContent = count > 0 ? count : '';
-    if (count <= 0) {
-      clearInterval(interval);
-      overlay.remove();
-      callback();
-    }
-  }, 1000);
-}
-
-// 🎮 Boucle de jeu
-function gameLoop() {
-  if (!gameStarted) return;
-
-  bgY += gameSettings.gameSpeed / 2;
-  if (bgY >= canvas.height) bgY = 0;
-  drawBackground();
-
-  if (keys['ArrowLeft'] && player.x > 0) player.x -= gameSettings.gameSpeed;
-  if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += gameSettings.gameSpeed;
-
-  ctx.fillStyle = "#0ff";
-  ctx.fillRect(player.x, player.y, player.width, player.height);
-
-  moveBoss();
-
-  if (Math.random() * 100 < gameSettings.spawnRate / 10) {
-    obstacles.push({ x: Math.random() * (canvas.width - 30), y: -30, width: 30, height: 30 });
-  }
-
-  obstacles.forEach((o, i) => {
-    o.y += gameSettings.gameSpeed;
-    ctx.fillStyle = "#f00";
-    ctx.fillRect(o.x, o.y, o.width, o.height);
-
-    if (player.x < o.x + o.width && player.x + player.width > o.x &&
-        player.y < o.y + o.height && player.y + player.height > o.y) {
-      obstacles.splice(i, 1);
-      lives--;
-      if (gameSettings.fxOn) sounds.hit.play();
-    }
-
-    if (o.y > canvas.height) obstacles.splice(i, 1);
-  });
-
-  score++;
-  scoreEl.textContent = "Score: " + score;
-  livesEl.textContent = "Vies: " + lives;
-
-  updateLevel();
-
-  if (lives <= 0) endGame();
-  else requestAnimationFrame(gameLoop);
-}
-
-// 🆙 Niveau
-function updateLevel() {
-  if (score % 500 === 0 && score !== 0) {
-    level++;
-    gameSettings.gameSpeed += 1;
-    gameSettings.spawnRate += 10;
-    if (gameSettings.fxOn) sounds.levelup.play();
-    showLevelUp(level);
-  }
-}
-
-function showLevelUp(level) {
-  const overlay = document.createElement('div');
-  overlay.textContent = "Niveau " + level;
-  overlay.style.cssText = `
-    position:absolute;
-    top:40%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    color:#0f0;
-    font-size:60px;
-    z-index:1000;
-    text-shadow:0 0 20px #0f0;
-  `;
-  document.body.appendChild(overlay);
-  setTimeout(() => overlay.remove(), 1500);
-}
-
 // 🧨 Fin du jeu
 function endGame() {
   gameStarted = false;
   paramPanel.style.display = 'flex';
   if (gameSettings.fxOn) sounds.gameover.play();
+  if (gameSettings.musicOn) sounds.music.pause();
 
   alert("Game Over ! Score: " + score);
 
@@ -226,10 +12,9 @@ function endGame() {
     launchFireworks();
   }
 
-  saveScore(score);
   updateLocalStats();
-  gameSettings.gameSpeed = 5;
-  gameSettings.spawnRate = 50;
+  gameSettings.gameSpeed = 3;
+  gameSettings.spawnRate = 40;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
 }
@@ -240,10 +25,11 @@ function drawBackground() {
   ctx.drawImage(backgroundImg, 0, bgY, canvas.width, canvas.height);
 }
 
-// 👾 Boss IA
+// 👾 Boss IA — suit le joueur lentement, évitable
 function moveBoss() {
-  if (player.x < boss.x) boss.x -= 2;
-  if (player.x > boss.x) boss.x += 2;
+  const bossSpeed = 1 + Math.floor(score / 450); // augmente tous les 450 pts
+  if (player.x < boss.x) boss.x -= bossSpeed;
+  if (player.x > boss.x) boss.x += bossSpeed;
   boss.y += 1;
   ctx.fillStyle = "#ff0";
   ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
