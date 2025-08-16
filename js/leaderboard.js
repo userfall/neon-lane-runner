@@ -1,8 +1,17 @@
-<script>
-function saveScore(pseudo, score) {
-  if (!pseudo) return;
+// leaderboard.js — Firebase compat
+function sanitizeKey(s) {
+  if (!s) return "anon";
+  return String(s).replace(/[.#$\[\]\/]/g, "_");
+}
+
+// 💾 Sauvegarder le score
+export function saveScore(score) {
+  const user = firebase.auth().currentUser;
+  if (!user) return;
+
+  const pseudo = user.displayName || user.email.split('@')[0];
   const key = sanitizeKey(pseudo);
-  const ref = db.ref("leaderboard/" + key);
+  const ref = firebase.database().ref("leaderboard/" + key);
   const safeScore = Number(score) || 0;
 
   ref.once("value").then(snap => {
@@ -17,10 +26,13 @@ function saveScore(pseudo, score) {
   }).catch(e => console.warn("Erreur lecture score", e));
 }
 
-function fetchLeaderboard() {
+// 📊 Charger le classement
+export function loadLeaderboard() {
   const boardEl = document.getElementById("rankingBoard");
+  const myRankEl = document.getElementById("myRank");
   boardEl.innerHTML = "Chargement...";
-  db.ref("leaderboard").once("value")
+
+  firebase.database().ref("leaderboard").once("value")
     .then(snapshot => {
       const entries = [];
       snapshot.forEach(child => {
@@ -36,30 +48,24 @@ function fetchLeaderboard() {
 
       entries.sort((a, b) => b.score - a.score || b.timestamp - a.timestamp);
       let html = "<ol>";
-      for (let i = 0; i < 10; i++) {
-        if (entries[i]) {
-          const e = entries[i];
-          const rankClass = (window.currentPseudo && sanitizeKey(window.currentPseudo).toLowerCase() === sanitizeKey(e.pseudo).toLowerCase()) ? 'rank-current' : '';
-          html += `<li class="${rankClass}"><b>#${i + 1}</b> ${e.pseudo} : <b>${e.score}</b> pts</li>`;
-        } else {
-          html += `<li style="color:#999">Vide</li>`;
-        }
-      }
+      const current = firebase.auth().currentUser?.displayName || firebase.auth().currentUser?.email?.split('@')[0];
+
+      entries.forEach((e, i) => {
+        const isCurrent = current && sanitizeKey(current) === sanitizeKey(e.pseudo);
+        html += `<li${isCurrent ? ' class="rank-current"' : ''}>
+          <b>#${i + 1}</b> ${e.pseudo} : <b>${e.score}</b> pts
+        </li>`;
+      });
+
       html += "</ol>";
       boardEl.innerHTML = html;
 
-      // Ton rang personnel
-      const myRankEl = document.getElementById("myRank");
-      if (window.currentPseudo) {
-        const myKey = sanitizeKey(window.currentPseudo).toLowerCase();
-        const idx = entries.findIndex(e => sanitizeKey(e.pseudo).toLowerCase() === myKey);
-        if (idx >= 0) {
-          myRankEl.innerHTML = `Ton rang : <b>#${idx + 1}</b> — score : <b>${entries[idx].score}</b>`;
-        } else {
-          myRankEl.innerText = "Tu n'as pas encore de score enregistré.";
-        }
+      // Rang personnel
+      const idx = entries.findIndex(e => sanitizeKey(e.pseudo) === sanitizeKey(current));
+      if (idx >= 0) {
+        myRankEl.innerHTML = `Ton rang : <b>#${idx + 1}</b> — score : <b>${entries[idx].score}</b>`;
       } else {
-        myRankEl.innerText = "Connecte-toi pour voir ton rang.";
+        myRankEl.innerText = "Tu n'as pas encore de score enregistré.";
       }
     })
     .catch(err => {
@@ -68,14 +74,14 @@ function fetchLeaderboard() {
     });
 }
 
-function showLeaderboard() {
-  document.getElementById("gameDiv").style.display = "none";
-  document.getElementById("leaderboardDiv").style.display = "flex";
-  fetchLeaderboard();
+// 🔙 Fermer le panneau
+export function setupLeaderboardClose() {
+  const closeBtn = document.getElementById("closeLeaderboardBtn");
+  const overlay = document.getElementById("leaderboardDiv");
+  if (closeBtn && overlay) {
+    closeBtn.addEventListener("click", () => {
+      overlay.style.display = "none";
+      document.getElementById("gameDiv").style.display = "flex";
+    });
+  }
 }
-
-function backToGame() {
-  document.getElementById("leaderboardDiv").style.display = "none";
-  document.getElementById("gameDiv").style.display = "flex";
-}
-</script>
