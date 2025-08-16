@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Neon Lane Runner</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/game.css" />
   <style>
     :root {
       --accent: #00f0ff;
@@ -168,6 +167,21 @@
 
     #gameDiv {
       display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 5;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+      background: linear-gradient(180deg,#0b0b0c,#121214);
+      border-radius: 14px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.7), 0 0 48px rgba(45,156,219,0.06) inset;
+      width: calc(min(1200px, 98vw));
+      height: calc(min(820px, 78vh));
+      touch-action: none;
     }
 
     @media (max-width: 800px) {
@@ -184,6 +198,11 @@
 
       .login-form {
         width: 100%;
+      }
+
+      canvas {
+        height: calc(min(520px, 62vh));
+        width: calc(min(980px, 98vw));
       }
     }
   </style>
@@ -233,53 +252,87 @@
   <canvas id="gameCanvas"></canvas>
 </div>
 
-<script type="module">
-  import { loginUser, signupUser } from './js/authenticator.js';
+<script>
+  // Simule l'authentification locale
+  async function loginUser() {
+    const name = document.getElementById("loginName").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+    if (!name || !password) throw new Error("Veuillez remplir tous les champs.");
+    if (password.length < 4) throw new Error("Mot de passe trop court.");
+    return { displayName: name };
+  }
 
-  const loginMsg = document.getElementById("loginMsg");
-  const loader = document.getElementById("loader");
+  async function signupUser() {
+        const name = document.getElementById("loginName").value.trim();
+    const password = document.getElementById("loginPassword").value.trim();
+    if (!name || !password) throw new Error("Veuillez remplir tous les champs.");
+    if (password.length < 4) throw new Error("Mot de passe trop court.");
+    // Simule une inscription réussie
+    return { displayName: name };
+  }
 
-  function showLoader(msg) {
-    loader.style.display = "flex";
-    loader.querySelector("p").textContent = msg;
+  function showLoader(message = "Chargement...") {
+    const loader = document.getElementById("loader");
+    if (loader) {
+      loader.style.display = "flex";
+      loader.querySelector("p").textContent = message;
+    }
   }
 
   function hideLoader() {
-    loader.style.display = "none";
+    const loader = document.getElementById("loader");
+    if (loader) {
+      loader.style.display = "none";
+    }
+  }
+
+  function startGame(pseudo) {
+    hideLoader();
+    const loginDiv = document.getElementById("loginDiv");
+    const gameDiv = document.getElementById("gameDiv");
+    loginDiv.style.display = "none";
+    gameDiv.style.display = "block";
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#0ff";
+    ctx.font = "32px Orbitron";
+    ctx.textAlign = "center";
+    ctx.fillText(`Bienvenue ${pseudo} !`, canvas.width / 2, canvas.height / 2);
   }
 
   document.getElementById("loginBtn").addEventListener("click", async () => {
+    const loginMsg = document.getElementById("loginMsg");
     loginMsg.textContent = "";
+    loginMsg.style.color = "#ff8a8a";
     showLoader("Connexion...");
     try {
       const user = await loginUser();
-      hideLoader();
-      document.getElementById("loginDiv").style.display = "none";
-      document.getElementById("gameDiv").style.display = "block";
       startGame(user.displayName || "Joueur");
     } catch (err) {
       hideLoader();
       loginMsg.textContent = err.message;
-      loginMsg.style.color = "#ff8a8a";
     }
   });
 
   document.getElementById("signupBtn").addEventListener("click", async () => {
+    const loginMsg = document.getElementById("loginMsg");
     loginMsg.textContent = "";
+    loginMsg.style.color = "#ff8a8a";
     showLoader("Inscription...");
     try {
       await signupUser();
       hideLoader();
-            loginMsg.textContent = "Inscription réussie ! Connecte-toi.";
+      loginMsg.textContent = "Inscription réussie ! Connecte-toi.";
       loginMsg.style.color = "#9fffb2";
     } catch (err) {
       hideLoader();
       loginMsg.textContent = err.message;
-      loginMsg.style.color = "#ff8a8a";
     }
   });
-</script>
 
-</body>
-</html>
-     
+  window.addEventListener("load", () => {
+    hideLoader();
+  });
+</script>
