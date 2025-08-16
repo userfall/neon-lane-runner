@@ -226,8 +226,19 @@ function updateLevel() {
 function showLevelUp(level) {
   const overlay = document.createElement('div');
   overlay.textContent = "Niveau " + level;
-  overlay.style.cssText = "position:absolute;top:40%;
-    overlay.style.cssText += "left:50%;transform:translate(-50%,-50%);color:#0f0;font-size:60px;z-index:1000;";
+  overlay.style.cssText = `
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #0f0;
+    font-size: 60px;
+    font-weight: bold;
+    text-shadow: 0 0 20px #0f0, 0 0 40px #0f0;
+    z-index: 1000;
+    pointer-events: none;
+    animation: fadeOut 1.5s ease forwards;
+  `;
   document.body.appendChild(overlay);
   setTimeout(() => overlay.remove(), 1500);
 }
