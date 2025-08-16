@@ -252,8 +252,9 @@
   <canvas id="gameCanvas"></canvas>
 </div>
 
-<script>
-  // Simule l'authentification locale
+<script type="module">
+  import { startGame } from './js/game.js';
+
   async function loginUser() {
     const name = document.getElementById("loginName").value.trim();
     const password = document.getElementById("loginPassword").value.trim();
@@ -263,9 +264,9 @@
   }
 
   async function signupUser() {
-        const name = document.getElementById("loginName").value.trim();
+    const name = document.getElementById("loginName").value.trim();
     const password = document.getElementById("loginPassword").value.trim();
-    if (!name || !password) throw new Error("Veuillez remplir tous les champs.");
+        if (!name || !password) throw new Error("Veuillez remplir tous les champs.");
     if (password.length < 4) throw new Error("Mot de passe trop court.");
     // Simule une inscription réussie
     return { displayName: name };
@@ -286,8 +287,6 @@
     }
   }
 
-  import { startGame } from './js/game.js'; // ✅ ton vrai jeu
-
   document.getElementById("loginBtn").addEventListener("click", async () => {
     const loginMsg = document.getElementById("loginMsg");
     loginMsg.textContent = "";
@@ -295,7 +294,10 @@
     showLoader("Connexion...");
     try {
       const user = await loginUser();
-      startGame(user.displayName || "Joueur");
+      hideLoader();
+      document.getElementById("loginDiv").style.display = "none";
+      document.getElementById("gameDiv").style.display = "block";
+      startGame(); // Appelle ton vrai jeu
     } catch (err) {
       hideLoader();
       loginMsg.textContent = err.message;
@@ -322,3 +324,5 @@
     hideLoader();
   });
 </script>
+</body>
+</html>
