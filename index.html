@@ -1,143 +1,233 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Connexion - Space Game</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neon Lane Runner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
   <style>
-    body {
+    :root {
+      --accent: #00f0ff;
+      --accent2: #38f9d7;
+      --text: #fff;
+      --card-bg: rgba(255,255,255,0.02);
+    }
+
+    body, html {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #111, #222, #000);
-      color: white;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: #0b0b0c;
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    #loginDiv {
+      position: fixed;
+      inset: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      z-index: 10;
+      pointer-events: auto;
     }
-    .container {
-      background: rgba(0,0,0,0.8);
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,255,255,0.5);
-      width: 350px;
+
+    .login-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      box-shadow: 0 12px 42px rgba(0,0,0,0.6);
+      padding: 22px;
+      width: 95%;
+      max-width: 820px;
+      display: flex;
+      gap: 22px;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,0.03);
+      backdrop-filter: blur(6px);
+      flex-wrap: wrap;
+    }
+
+    .logo-block {
+      flex: 0 0 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 18px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(45,156,219,0.08), rgba(56,239,125,0.03));
+      box-shadow: 0 6px 18px rgba(45,156,219,0.06);
+    }
+
+    .fb-logo {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -1.5px;
+      text-shadow: 0 4px 18px rgba(0,255,255,0.2);
+    }
+
+    .logo-sub {
+      color: rgba(255,255,255,0.55);
+      font-size: 13px;
       text-align: center;
     }
-    h2 {
-      margin-bottom: 20px;
-      color: #0ff;
+
+    .login-form {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: none;
+
+    .login-form input {
+      padding: 14px 12px;
       border-radius: 8px;
-      outline: none;
-      background: #333;
-      color: white;
-    }
-    button {
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      color: var(--text);
+      font-size: 15px;
       width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      background: #0ff;
-      color: #000;
-      border: none;
+    }
+
+    .btn {
+      padding: 12px 14px;
       border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #00cccc;
-    }
-    p {
-      margin-top: 15px;
-      font-size: 14px;
-    }
-    .link-btn {
-      background: none;
       border: none;
-      color: #0ff;
-      font-size: 14px;
       cursor: pointer;
-      text-decoration: underline;
-      margin-top: 5px;
+      font-weight: 700;
+      display: inline-block;
     }
-    .hidden {
+
+    .primary {
+      background: linear-gradient(90deg,var(--accent),var(--accent2));
+      color: #0b1220;
+      box-shadow: 0 10px 30px rgba(0,255,255,0.1);
+    }
+
+    .secondary {
+      background: linear-gradient(90deg,#43e97b,#38f9d7);
+      color: #072022;
+    }
+
+    #loginMsg {
+      min-height: 20px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    footer {
+      color: rgba(255,255,255,0.45);
+      font-size: 12px;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    #gameDiv {
       display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 5;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+      background: linear-gradient(180deg,#0b0b0c,#121214);
+      border-radius: 14px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.7), 0 0 48px rgba(45,156,219,0.06) inset;
+      width: calc(min(1200px, 98vw));
+      height: calc(min(820px, 78vh));
+      touch-action: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Connexion -->
-    <div id="loginForm">
-      <h2>Connexion</h2>
-      <input type="text" id="loginUser" placeholder="Nom d'utilisateur" required>
-      <input type="password" id="loginPass" placeholder="Mot de passe" required>
-      <button onclick="login()">Se connecter</button>
-      <p>Pas encore de compte ? 
-        <button class="link-btn" onclick="showRegister()">Inscription</button>
-      </p>
-    </div>
 
-    <!-- Inscription -->
-    <div id="registerForm" class="hidden">
-      <h2>Inscription</h2>
-      <input type="text" id="regUser" placeholder="Nom d'utilisateur" required>
-      <input type="password" id="regPass" placeholder="Mot de passe" required>
-      <button onclick="register()">S'inscrire</button>
-      <p>Déjà un compte ? 
-        <button class="link-btn" onclick="showLogin()">Connexion</button>
-      </p>
+<!-- 🔐 Connexion / Inscription -->
+<div id="loginDiv">
+  <div class="login-card">
+    <div class="logo-block">
+      <div class="fb-logo">Neon Lane</div>
+      <div class="logo-sub">Runner — Edition 2025</div>
+      <div class="logo-sub">by Kabir & Samuel Deporno</div>
+    </div>
+    <div class="login-form">
+      <input id="loginUser" type="text" placeholder="Pseudo" />
+      <input id="loginPass" type="password" placeholder="Mot de passe" />
+      <button class="btn primary" id="loginBtn">Connexion</button>
+      <button class="btn secondary" id="signupBtn">Créer un compte</button>
+      <div id="loginMsg"></div>
+      <footer>© 2025 Neon Lane Runner — Tous droits réservés</footer>
     </div>
   </div>
+</div>
 
-  <script>
-    function showRegister() {
-      document.getElementById("loginForm").classList.add("hidden");
-      document.getElementById("registerForm").classList.remove("hidden");
+<!-- 🎮 Jeu -->
+<div id="gameDiv">
+  <canvas id="gameCanvas"></canvas>
+</div>
+
+<script type="module">
+  import { startGame } from './js/game.js';
+
+  function getUsers() {
+    return JSON.parse(localStorage.getItem("users") || "{}");
+  }
+  function saveUsers(users) {
+    localStorage.setItem("users", JSON.stringify(users));
+  }
+
+  function loginUser(name, pass) {
+    const users = getUsers();
+    if (!users[name]) throw new Error("Utilisateur inconnu.");
+    if (users[name] !== pass) throw new Error("Mot de passe incorrect.");
+    return { displayName: name };
+  }
+
+  function signupUser(name, pass) {
+    const users = getUsers();
+    if (users[name]) throw new Error("Ce pseudo existe déjà !");
+    users[name] = pass;
+    saveUsers(users);
+    return { displayName: name };
+  }
+
+  function startSession(user) {
+    document.getElementById("loginDiv").style.display = "none";
+    document.getElementById("gameDiv").style.display = "block";
+    startGame(user.displayName);
+  }
+
+  document.getElementById("loginBtn").addEventListener("click", () => {
+    const user = document.getElementById("loginUser").value.trim();
+    const pass = document.getElementById("loginPass").value.trim();
+    const msg = document.getElementById("loginMsg");
+    msg.textContent = "";
+    try {
+      const u = loginUser(user, pass);
+      startSession(u);
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.style.color = "#ff8a8a";
     }
+  });
 
-    function showLogin() {
-      document.getElementById("registerForm").classList.add("hidden");
-      document.getElementById("loginForm").classList.remove("hidden");
+  document.getElementById("signupBtn").addEventListener("click", () => {
+    const user = document.getElementById("loginUser").value.trim();
+    const pass = document.getElementById("loginPass").value.trim();
+    const msg = document.getElementById("loginMsg");
+    msg.textContent = "";
+    try {
+      signupUser(user, pass);
+      msg.textContent = "Compte créé ! Connecte-toi.";
+      msg.style.color = "#9fffb2";
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.style.color = "#ff8a8a";
     }
-
-    function register() {
-      let user = document.getElementById("regUser").value.trim();
-      let pass = document.getElementById("regPass").value.trim();
-
-      if (!user || !pass) {
-        alert("Remplis tous les champs !");
-        return;
-      }
-
-      if (localStorage.getItem("user_" + user)) {
-        alert("Ce nom d'utilisateur existe déjà !");
-        return;
-      }
-
-      localStorage.setItem("user_" + user, pass);
-      alert("Inscription réussie ✅ ! Connecte-toi.");
-      showLogin();
-    }
-
-    function login() {
-      let user = document.getElementById("loginUser").value.trim();
-      let pass = document.getElementById("loginPass").value.trim();
-
-      let savedPass = localStorage.getItem("user_" + user);
-
-      if (savedPass && savedPass === pass) {
-        localStorage.setItem("currentUser", user);
-        window.location.href = "game.html"; // Redirection vers le jeu
-      } else {
-        alert("Identifiants incorrects ❌");
-      }
-    }
-  </script>
+  });
+</script>
 </body>
 </html>
