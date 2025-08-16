@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/game.css" />
 
-  <!-- Firebase compat -->
+  <!-- Firebase compat (auth uniquement si besoin) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
@@ -36,30 +36,25 @@
     <div id="lives">Vies: 3</div>
   </div>
 
-  <!-- ⚙️ Menu principal / paramètres -->
-  <div id="paramPanel" class="overlay">
-    <h1 class="game-title">🚀 Neon Lane Runner 🚀</h1>
-    <button id="startBtn" class="btn neon">▶️ START</button>
-    <button id="musicToggle" class="btn">Musique ON</button>
-    <button id="fxToggle" class="btn">FX ON</button>
-    <button id="statsBtn" class="btn">Stats</button>
+  <!-- ⚙️ Panneau de paramètres -->
+  <div id="paramPanel">
+    <button id="musicToggle">Musique ON</button>
+    <button id="fxToggle">FX ON</button>
+    <button id="statsBtn">Stats</button>
+    <button id="startBtn">START</button>
   </div>
 
   <!-- 📊 Panneau de stats -->
-  <div id="statsPanel" class="panel">
-    <h2>📊 Statistiques</h2>
-    <p>Parties jouées : <span id="gamesPlayed">0</span></p>
-    <p>Meilleur score : <span id="bestScore">0</span></p>
+  <div id="statsPanel" style="display:none;">
+    Parties jouées : <span id="gamesPlayed">0</span><br>
+    Meilleur score : <span id="bestScore">0</span>
   </div>
 
   <!-- 🎉 Victoire -->
-  <div id="victoryOverlay" class="overlay" style="display:none;">
+  <div id="victoryOverlay" style="display:none;">
     <canvas id="fireworksCanvas"></canvas>
-    <div class="victory-content">
-      <h2>🎉 Bravo ! 🎉</h2>
-      <p>Tu as atteint un score incroyable !</p>
-      <button id="replayBtn" class="btn neon">🔄 Rejouer</button>
-    </div>
+    <p>🎉 Bravo ! Tu as atteint un score incroyable !</p>
+    <button id="replayBtn">Rejouer</button>
   </div>
 </body>
 </html>
