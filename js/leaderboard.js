@@ -78,7 +78,10 @@ export function setupLeaderboardClose() {
   if (closeBtn && overlay) {
     closeBtn.addEventListener("click", () => {
       overlay.style.display = "none";
-      document.getElementById("gameDiv")?.style.display = "flex";
+      const gameDiv = document.getElementById("gameDiv");
+      if (gameDiv) {
+        gameDiv.style.display = "flex";
+      }
     });
   }
 }
