@@ -1,4 +1,5 @@
 // leaderboard.js — Firebase compat
+
 function sanitizeKey(s) {
   if (!s) return "anon";
   return String(s).replace(/[.#$\[\]\/]/g, "_");
@@ -52,8 +53,8 @@ export function loadLeaderboard() {
 
       entries.forEach((e, i) => {
         const isCurrent = current && sanitizeKey(current) === sanitizeKey(e.pseudo);
-        html += `<li${isCurrent ? ' class="rank-current"' : ''}>
-          <b>#${i + 1}</b> ${e.pseudo} : <b>${e.score}</b> pts
+        html += `<li${isCurrent ? ' style="color:#0f0;font-weight:bold;"' : ''}>
+          <b>#${i + 1}</b> ${e.pseudo} — <b>${e.score}</b> pts
         </li>`;
       });
 
@@ -74,6 +75,9 @@ export function loadLeaderboard() {
     });
 }
 
+// 🔁 Rafraîchir manuellement
+window.loadLeaderboard = loadLeaderboard;
+
 // 🔙 Fermer le panneau
 export function setupLeaderboardClose() {
   const closeBtn = document.getElementById("closeLeaderboardBtn");
@@ -81,7 +85,7 @@ export function setupLeaderboardClose() {
   if (closeBtn && overlay) {
     closeBtn.addEventListener("click", () => {
       overlay.style.display = "none";
-      document.getElementById("gameDiv").style.display = "flex";
+      document.getElementById("gameDiv")?.style.display = "flex";
     });
   }
 }
