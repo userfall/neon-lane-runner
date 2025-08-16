@@ -34,6 +34,7 @@ const fireworksCanvas = document.getElementById('fireworksCanvas');
 const statsPanel = document.getElementById('statsPanel');
 const pauseBtn = document.getElementById('pauseBtn');
 const pauseOverlay = document.getElementById('pauseOverlay');
+const loader = document.getElementById('loader');
 
 // 🧩 Variables de jeu
 let player, obstacles, boss;
@@ -47,31 +48,12 @@ let gamePaused = false;
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
-// 📱 Swipe mobile fluide
-let swipeStartX = null;
-let swipeStartY = null;
-let swipeStartTime = null;
-
+// 📱 Contrôle tactile : tap gauche/droite
 canvas.addEventListener('touchstart', e => {
-  swipeStartX = e.touches[0].clientX;
-  swipeStartY = e.touches[0].clientY;
-  swipeStartTime = Date.now();
-});
+  const touchX = e.touches[0].clientX;
+  const middle = canvas.width / 2;
 
-canvas.addEventListener('touchend', e => {
-  const swipeEndX = e.changedTouches[0].clientX;
-  const swipeEndY = e.changedTouches[0].clientY;
-  const deltaX = swipeEndX - swipeStartX;
-  const deltaY = swipeEndY - swipeStartY;
-  const duration = Date.now() - swipeStartTime;
-
-  if (Math.abs(deltaY) > Math.abs(deltaX)) return;
-  if (Math.abs(deltaX) < 30 || duration > 500) return;
-
-  keys['ArrowLeft'] = false;
-  keys['ArrowRight'] = false;
-
-  if (deltaX < 0) {
+  if (touchX < middle) {
     keys['ArrowLeft'] = true;
     setTimeout(() => keys['ArrowLeft'] = false, 150);
   } else {
@@ -112,6 +94,9 @@ window.addEventListener('load', async () => {
   drawBackground();
   document.getElementById("gamesPlayed").textContent = localStorage.getItem("gamesPlayed") || 0;
   document.getElementById("bestScore").textContent = localStorage.getItem("bestScore") || 0;
+
+  // ✅ Masquer le loader une fois prêt
+  loader.style.display = "none";
 });
 window.addEventListener('resize', resizeCanvas);
 
@@ -133,7 +118,7 @@ function startGame() {
   gamePaused = false;
   obstacles = [];
   player = { x: canvas.width / 2 - 25, y: canvas.height - 100, width: 50, height: 50 };
-  boss = { x: Math.random() * canvas.width, y: -100, width: 40, height: 40 }; // 👾 Boss plus petit
+  boss = { x: Math.random() * canvas.width, y: -100, width: 40, height: 40 };
   bgY = 0;
   paramPanel.style.display = 'none';
   pauseBtn.style.display = 'block';
@@ -221,13 +206,9 @@ function gameLoop() {
   ctx.fillRect(player.x, player.y, player.width, player.height);
 
   moveBoss();
-    if (Math.random() * 100 < gameSettings.spawnRate / 20) {
-    obstacles.push({
-      x: Math.random() * (canvas.width - 30),
-      y: -30,
-      width: 30,
-      height: 30
-    });
+
+  if (Math.random() * 100 < gameSettings.spawnRate / 20) {
+    obstacles.push({ x: Math.random() * (canvas.width - 30), y: -30, width: 30, height: 30 });
   }
 
   obstacles.forEach((o, i) => {
@@ -245,8 +226,7 @@ function gameLoop() {
       lives--;
       if (gameSettings.fxOn) sounds.hit.play();
     }
-
-    if (o.y > canvas.height) obstacles.splice(i, 1);
+        if (o.y > canvas.height) obstacles.splice(i, 1);
   });
 
   score++;
@@ -379,5 +359,3 @@ function launchFireworks() {
 
   animate();
 }
-
-  
