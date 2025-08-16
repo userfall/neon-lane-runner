@@ -37,6 +37,7 @@ let player, obstacles, boss;
 let score = 0, lives = 3, level = 1;
 let keys = {};
 let gameStarted = false;
+let fireworksLaunched = false;
 
 // 🎮 Contrôles clavier
 document.addEventListener('keydown', e => keys[e.key] = true);
@@ -110,6 +111,7 @@ function startGame() {
 
   updateLocalStats();
   animateCountdown(3, () => requestAnimationFrame(gameLoop));
+  fireworksLaunched = false;
 }
 
 // 📊 Statistiques locales
@@ -227,10 +229,11 @@ function endGame() {
 
   alert("Game Over ! Score: " + score);
 
-  if (score >= 2000) {
-    victoryOverlay.style.display = 'flex';
-    launchFireworks();
-  }
+  if (score >= 2000 && !fireworksLaunched) {
+  fireworksLaunched = true;
+  victoryOverlay.style.display = 'flex';
+  launchFireworks();
+}
 
   updateLocalStats();
     gameSettings.gameSpeed = 2.5;
