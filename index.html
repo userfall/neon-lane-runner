@@ -11,82 +11,99 @@
   <script type="module" src="js/game.js"></script>
 </head>
 <body>
-  <!-- ⏳ Loader -->
-  <div id="loader" style="display:none;">
-    <div class="spinner"></div>
-    <p>Chargement...</p>
-  </div>
 
-  <!-- 🔐 Connexion / Inscription -->
-  <div id="authPanel" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background:#000; color:#0ff;">
-    <h1>Neon Lane Runner</h1>
+<!-- ⏳ Loader -->
+<div id="loader" style="display:none;">
+  <div class="spinner"></div>
+  <p>Chargement...</p>
+</div>
 
-    <div style="margin-bottom:20px;">
-      <input type="text" id="loginName" placeholder="Pseudo" />
-      <input type="password" id="loginPassword" placeholder="Mot de passe" />
-      <button id="loginBtn">Connexion</button>
+<!-- 🔐 Connexion / Inscription -->
+<div id="loginDiv">
+  <div class="login-card">
+    <div class="logo-block">
+      <div class="fb-logo">Neon Lane</div>
+      <div class="logo-sub">Runner — by Kabir & Samuel</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:8px;text-align:center">
+        Connexion rapide — pseudo uniquement
+      </div>
     </div>
-
-    <div>
-      <input type="text" id="signupName" placeholder="Nouveau pseudo" />
-      <input type="password" id="signupPassword" placeholder="Mot de passe" />
-      <button id="signupBtn">Inscription</button>
+    <div class="login-form">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <input id="loginName" type="text" placeholder="Pseudo" style="flex:1;">
+        <input id="loginPassword" type="password" placeholder="Mot de passe" style="width:220px;">
+      </div>
+      <div class="form-row">
+        <button class="btn primary" id="loginBtn">Connexion</button>
+        <button class="btn secondary" id="signupBtn">Créer un compte</button>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <label style="font-size:13px;color:rgba(255,255,255,0.6);">Langue</label>
+        <select id="langSelect" style="padding:6px;border-radius:6px;background:rgba(255,255,255,0.02);color:var(--text);border:1px solid rgba(255,255,255,0.03)">
+          <option value="fr">français</option>
+          <option value="en">english</option>
+        </select>
+        <label style="margin-left:auto; font-size:13px; color:rgba(255,255,255,0.6);">Son</label>
+        <input type="checkbox" id="soundToggle" checked>
+      </div>
+      <div id="loginMsg"></div>
+      <footer>© 2025 Kabir &amp; Samuel Deporno — All rights reserved</footer>
     </div>
-
-    <p id="authMsg" style="margin-top:20px;"></p>
   </div>
+</div>
 
-  <!-- 🎮 Jeu -->
-  <div id="gameDiv" style="display:none;">
-    <canvas id="gameCanvas"></canvas>
-    <!-- HUD, paramètres, pause, victoire, etc. comme dans ton game.html -->
-  </div>
+<!-- 🎮 Jeu -->
+<div id="gameDiv" style="display:none;">
+  <canvas id="gameCanvas"></canvas>
+  <!-- HUD, paramètres, pause, victoire, etc. sont gérés dans game.js -->
+</div>
 
-  <script type="module">
-    import { loginUser, signupUser } from './js/authenticator.js';
+<script type="module">
+  import { loginUser, signupUser } from './js/authenticator.js';
 
-    const authMsg = document.getElementById("authMsg");
-    const loader = document.getElementById("loader");
+  const loginMsg = document.getElementById("loginMsg");
+  const loader = document.getElementById("loader");
 
-    function showLoader(msg) {
-      loader.style.display = "flex";
-      loader.querySelector("p").textContent = msg;
+  function showLoader(msg) {
+    loader.style.display = "flex";
+    loader.querySelector("p").textContent = msg;
+  }
+
+  function hideLoader() {
+    loader.style.display = "none";
+  }
+
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    loginMsg.textContent = "";
+    showLoader("Connexion...");
+    try {
+      const user = await loginUser();
+      hideLoader();
+      document.getElementById("loginDiv").style.display = "none";
+      document.getElementById("gameDiv").style.display = "block";
+      startGame(user.displayName || "Joueur");
+    } catch (err) {
+      hideLoader();
+      loginMsg.textContent = err.message;
+      loginMsg.style.color = "#ff8a8a";
     }
+  });
 
-    function hideLoader() {
-      loader.style.display = "none";
+  document.getElementById("signupBtn").addEventListener("click", async () => {
+    loginMsg.textContent = "";
+    showLoader("Inscription...");
+    try {
+      await signupUser();
+      hideLoader();
+      loginMsg.textContent = "Inscription réussie ! Connecte-toi.";
+      loginMsg.style.color = "#9fffb2";
+    } catch (err) {
+      hideLoader();
+      loginMsg.textContent = err.message;
+      loginMsg.style.color = "#ff8a8a";
     }
+  });
+</script>
 
-    document.getElementById("loginBtn").addEventListener("click", async () => {
-      authMsg.textContent = "";
-      showLoader("Connexion...");
-      try {
-        const user = await loginUser();
-        hideLoader();
-        document.getElementById("authPanel").style.display = "none";
-        document.getElementById("gameDiv").style.display = "block";
-        startGame(user.displayName || "Joueur");
-      } catch (err) {
-        hideLoader();
-        authMsg.textContent = err.message;
-        authMsg.style.color = "#ff8a8a";
-      }
-    });
-
-    document.getElementById("signupBtn").addEventListener("click", async () => {
-      authMsg.textContent = "";
-      showLoader("Inscription...");
-      try {
-        await signupUser();
-        hideLoader();
-        authMsg.textContent = "Inscription réussie ! Connecte-toi.";
-        authMsg.style.color = "#9fffb2";
-      } catch (err) {
-        hideLoader();
-        authMsg.textContent = err.message;
-        authMsg.style.color = "#ff8a8a";
-      }
-    });
-  </script>
 </body>
 </html>
