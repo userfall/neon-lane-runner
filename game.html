@@ -1,12 +1,30 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Neon Lane Runner - Kabir & Françoise</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/game.css">
-  <script type="module" src="js/firebase-config.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/game.css" />
+
+  <!-- Firebase compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCbNweC0aD8f_OGvbvmBVNSKbaMP_A4khI",
+      authDomain: "neonlanerunner.firebaseapp.com",
+      databaseURL: "https://neonlanerunner-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "neonlanerunner",
+      storageBucket: "neonlanerunner.appspot.com",
+      messagingSenderId: "916907926117",
+      appId: "1:916907926117:web:43f1d08ed90b864a985c8c"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <!-- Modules du jeu -->
   <script type="module" src="js/settings.js"></script>
   <script type="module" src="js/leaderboard.js"></script>
   <script type="module" src="js/game.js"></script>
@@ -30,10 +48,16 @@
   </div>
 
   <!-- 🏆 Classement -->
-  <div id="leaderboardOverlay" style="display:none;">
-    <h2>Classement Top 10</h2>
-    <div id="leaderboardList">Chargement...</div>
-    <button id="closeLeaderboardBtn">Fermer</button>
+  <div id="leaderboardDiv" style="display:none;">
+    <div class="leader-card">
+      <h2 style="margin:0 0 8px 0; color:#0ff">🏆 Classement Général</h2>
+      <div id="rankingBoard">Chargement...</div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button class="btn primary" onclick="loadLeaderboard()">↻ Rafraîchir</button>
+        <button class="btn" id="closeLeaderboardBtn">Retour au jeu</button>
+      </div>
+      <div id="myRank" style="margin-top:10px;color:#fff"></div>
+    </div>
   </div>
 
   <!-- 🎉 Victoire -->
