@@ -6,28 +6,10 @@
   <title>Neon Lane Runner - Kabir & Françoise</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/game.css" />
-
-  <!-- Firebase compat (auth uniquement si besoin) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCbNweC0aD8f_OGvbvmBVNSKbaMP_A4khI",
-      authDomain: "neonlanerunner.firebaseapp.com",
-      projectId: "neonlanerunner",
-      storageBucket: "neonlanerunner.appspot.com",
-      messagingSenderId: "916907926117",
-      appId: "1:916907926117:web:43f1d08ed90b864a985c8c"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
-
-  <!-- Modules du jeu -->
   <script type="module" src="js/settings.js"></script>
   <script type="module" src="js/game.js"></script>
 </head>
 <body>
-  <!-- 🎮 Canvas principal -->
   <canvas id="gameCanvas"></canvas>
 
   <!-- 🧠 HUD -->
@@ -43,6 +25,9 @@
     <button id="statsBtn">Stats</button>
     <button id="startBtn">START</button>
   </div>
+
+  <!-- ⏸️ Bouton pause (visible uniquement en jeu) -->
+  <button id="pauseBtn" style="display:none; position:absolute; top:10px; right:10px; z-index:100; padding:10px 15px; font-weight:bold; border:none; border-radius:8px; background:#0ff; color:#000; box-shadow:0 0 10px #0ff;">Pause</button>
 
   <!-- 📊 Panneau de stats -->
   <div id="statsPanel" style="display:none;">
