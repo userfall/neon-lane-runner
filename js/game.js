@@ -20,7 +20,7 @@ const backgroundImg = new Image();
 backgroundImg.src = './assets/images/background.png';
 let bgY = 0;
 
-// 🧠 HUD
+// 🧠 Éléments HUD
 const scoreEl = document.getElementById('score');
 const livesEl = document.getElementById('lives');
 const startBtn = document.getElementById('startBtn');
@@ -91,16 +91,15 @@ function resizeCanvas() {
 
 // 🚀 Démarrer le jeu
 function startGame() {
-  // Reset complet
   gameStarted = true;
   score = 0;
   level = 1;
   lives = gameSettings.lives;
-  gameSettings.gameSpeed = 2;       // ⚡ Début lent
-  gameSettings.spawnRate = 20;      // peu de blocs au début
+  gameSettings.gameSpeed = 2.5;
+  gameSettings.spawnRate = 25;
   obstacles = [];
   player = { x: canvas.width / 2 - 25, y: canvas.height - 100, width: 50, height: 50 };
-  boss = null;                      // pas de boss au début
+  boss = { x: Math.random() * canvas.width, y: -100, width: 60, height: 60 };
   bgY = 0;
   paramPanel.style.display = 'none';
 
@@ -150,26 +149,19 @@ function animateCountdown(num, callback) {
 function gameLoop() {
   if (!gameStarted) return;
 
-  // Fond
-  bgY += gameSettings.gameSpeed / 3;
+  bgY += gameSettings.gameSpeed / 2;
   if (bgY >= canvas.height) bgY = 0;
   drawBackground();
 
-  // Déplacement joueur
-  if (keys['ArrowLeft'] && player.x > 0) player.x -= gameSettings.gameSpeed * 1.2;
-  if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += gameSettings.gameSpeed * 1.2;
+  if (keys['ArrowLeft'] && player.x > 0) player.x -= gameSettings.gameSpeed;
+  if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += gameSettings.gameSpeed;
 
   ctx.fillStyle = "#0ff";
   ctx.fillRect(player.x, player.y, player.width, player.height);
 
-  // Boss seulement à partir du niveau 5
-  if (level >= 5) {
-    if (!boss) boss = { x: canvas.width / 2, y: -120, width: 60, height: 60 };
-    moveBoss();
-  }
+  moveBoss();
 
-  // Obstacles
-  if (Math.random() * 100 < gameSettings.spawnRate / 100) {
+  if (Math.random() * 100 < gameSettings.spawnRate / 20) {
     obstacles.push({ x: Math.random() * (canvas.width - 30), y: -30, width: 30, height: 30 });
   }
 
@@ -178,7 +170,6 @@ function gameLoop() {
     ctx.fillStyle = "#f00";
     ctx.fillRect(o.x, o.y, o.width, o.height);
 
-    // Collision
     if (player.x < o.x + o.width && player.x + player.width > o.x &&
         player.y < o.y + o.height && player.y + player.height > o.y) {
       obstacles.splice(i, 1);
@@ -189,12 +180,10 @@ function gameLoop() {
     if (o.y > canvas.height) obstacles.splice(i, 1);
   });
 
-  // HUD
   score++;
   scoreEl.textContent = "Score: " + score;
   livesEl.textContent = "Vies: " + lives;
 
-  // Progression
   updateLevel();
 
   if (lives <= 0) endGame();
@@ -203,9 +192,9 @@ function gameLoop() {
 
 // 🆙 Niveau
 function updateLevel() {
-  if (score % 800 === 0 && score !== 0) {
+  if (score % 600 === 0 && score !== 0) {
     level++;
-    gameSettings.gameSpeed += 0.5;      // progression douce
+    gameSettings.gameSpeed += 0.5;
     gameSettings.spawnRate += 5;
     if (gameSettings.fxOn) sounds.levelup.play();
     showLevelUp(level);
@@ -244,9 +233,8 @@ function endGame() {
   }
 
   updateLocalStats();
-  gameSettings.gameSpeed = 2;
-  gameSettings.spawnRate = 20;
-  boss = null;
+    gameSettings.gameSpeed = 2.5;
+  gameSettings.spawnRate = 25;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
 }
@@ -257,23 +245,22 @@ function drawBackground() {
   ctx.drawImage(backgroundImg, 0, bgY, canvas.width, canvas.height);
 }
 
-// 👾 Boss IA équilibré
+// 👾 Boss IA — suit le joueur lentement, évitable
 function moveBoss() {
-  const bossSpeed = 0.5 + Math.floor(score / 1000); // progression lente
-  if (player.x < boss.x) boss.x -= bossSpeed;
-  if (player.x > boss.x) boss.x += bossSpeed;
-  boss.y += 0.5;
-
+  const bossSpeed = 0.8 + Math.floor(score / 600) * 0.2;
+  if (player.x < boss.x - 10) boss.x -= bossSpeed;
+  if (player.x > boss.x + 10) boss.x += bossSpeed;
+  boss.y += 0.8;
   ctx.fillStyle = "#ff0";
   ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
 
   if (player.x < boss.x + boss.width && player.x + player.width > boss.x &&
       player.y < boss.y + boss.height && player.y + player.height > boss.y) {
     lives--;
-    boss.y = -120;
+    boss.y = -100;
   }
 
-  if (boss.y > canvas.height) boss.y = -120;
+  if (boss.y > canvas.height) boss.y = -100;
 }
 
 // 🎆 Feux d’artifice
@@ -283,7 +270,7 @@ function launchFireworks() {
   fireworksCanvas.height = window.innerHeight;
 
   const particles = [];
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 100; i++) {
     particles.push({
       x: fireworksCanvas.width / 2,
       y: fireworksCanvas.height / 2,
