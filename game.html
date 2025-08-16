@@ -1,125 +1,46 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Neon Lane Runner - Kabir & Françoise</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/game.css">
-<script type="module" src="js/firebase-config.js"></script>
-<script type="module" src="js/settings.js"></script>
-<script type="module" src="js/leaderboard.js"></script>
-<script type="module" src="js/game.js"></script>
-<style>
-  body, html {
-    margin:0; padding:0;
-    font-family:'Orbitron', sans-serif;
-    background: linear-gradient(135deg,#0f0c29,#302b63,#24243e);
-    color:#0ff;
-    overflow:hidden;
-  }
-  canvas { display:block; }
-
-  /* HUD */
-  #hud {
-    position:absolute; top:10px; left:50%; transform:translateX(-50%);
-    display:flex; gap:20px;
-    font-size:24px; text-shadow:0 0 10px #0ff,0 0 20px #0ff;
-    z-index:50;
-  }
-
-  /* Param Panel */
-  #paramPanel {
-    position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
-    display:flex; gap:15px; z-index:50;
-  }
-  #paramPanel button {
-    padding:10px 15px;
-    border:none; border-radius:10px;
-    font-weight:bold; cursor:pointer;
-    background:#0ff; color:#000;
-    box-shadow:0 0 10px #0ff;
-    transition:all 0.2s ease;
-  }
-  #paramPanel button:hover {
-    background:#0aa;
-    box-shadow:0 0 20px #0ff inset,0 0 25px #0ff;
-  }
-
-  /* Leaderboard */
-  #leaderboardOverlay {
-    position:absolute; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.9); display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:20px;
-    z-index:100; color:#0ff;
-    font-size:20px;
-  }
-  #leaderboardOverlay table {
-    width:50%; border-collapse:collapse; text-align:center;
-  }
-  #leaderboardOverlay th, td {
-    padding:10px; border:1px solid #0ff;
-  }
-  #leaderboardOverlay button {
-    padding:10px 20px; border:none; border-radius:10px;
-    background:#0ff; color:#000; cursor:pointer;
-  }
-  #leaderboardOverlay button:hover {
-    background:#0aa;
-  }
-
-  /* Victory Overlay */
-  #victoryOverlay {
-    position:absolute; top:0; left:0; width:100%; height:100%;
-    background:rgba(0,0,0,0.95); display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:20px;
-    z-index:200; color:#0ff;
-    font-size:28px; text-align:center;
-  }
-  #victoryOverlay canvas {
-    position:absolute; top:0; left:0; z-index:199;
-  }
-  #victoryOverlay button {
-    padding:15px 25px; border:none; border-radius:12px;
-    background:#0ff; color:#000; cursor:pointer;
-    font-size:18px; font-weight:bold;
-  }
-  #victoryOverlay button:hover {
-    background:#0aa;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Lane Runner - Kabir & Françoise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/game.css">
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/settings.js"></script>
+  <script type="module" src="js/leaderboard.js"></script>
+  <script type="module" src="js/game.js"></script>
 </head>
 <body>
-<canvas id="gameCanvas"></canvas>
+  <!-- 🎮 Canvas du jeu -->
+  <canvas id="gameCanvas"></canvas>
 
-<!-- HUD -->
-<div id="hud">
+  <!-- 🧠 HUD -->
+  <div id="hud">
     <div id="score">Score: 0</div>
     <div id="lives">Vies: 3</div>
-</div>
+  </div>
 
-<!-- Param Panel -->
-<div id="paramPanel">
+  <!-- ⚙️ Panneau de paramètres -->
+  <div id="paramPanel">
     <button id="musicToggle">Musique ON</button>
     <button id="fxToggle">FX ON</button>
     <button id="showLeaderboardBtn">Voir le classement</button>
     <button id="startBtn">START</button>
-</div>
+  </div>
 
-<!-- Leaderboard Overlay -->
-<div id="leaderboardOverlay" style="display:none;">
+  <!-- 🏆 Classement -->
+  <div id="leaderboardOverlay" style="display:none;">
     <h2>Classement Top 10</h2>
-    <table id="leaderboardTable">
-        <tr><th>Pseudo</th><th>Score</th></tr>
-    </table>
-    <button id="closeLeaderboard">Fermer</button>
-</div>
+    <div id="leaderboardList">Chargement...</div>
+    <button id="closeLeaderboardBtn">Fermer</button>
+  </div>
 
-<!-- Victory Overlay -->
-<div id="victoryOverlay" style="display:none;">
+  <!-- 🎉 Victoire -->
+  <div id="victoryOverlay" style="display:none;">
     <canvas id="fireworksCanvas"></canvas>
     <p>🎉 Bravo ! Tu as atteint un score incroyable !</p>
     <button id="replayBtn">Rejouer</button>
-</div>
+  </div>
 </body>
 </html>
