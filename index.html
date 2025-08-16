@@ -286,21 +286,7 @@
     }
   }
 
-  function startGame(pseudo) {
-    hideLoader();
-    const loginDiv = document.getElementById("loginDiv");
-    const gameDiv = document.getElementById("gameDiv");
-    loginDiv.style.display = "none";
-    gameDiv.style.display = "block";
-
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#0ff";
-    ctx.font = "32px Orbitron";
-    ctx.textAlign = "center";
-    ctx.fillText(`Bienvenue ${pseudo} !`, canvas.width / 2, canvas.height / 2);
-  }
+  import { startGame } from './js/game.js'; // ✅ ton vrai jeu
 
   document.getElementById("loginBtn").addEventListener("click", async () => {
     const loginMsg = document.getElementById("loginMsg");
