@@ -55,11 +55,14 @@ canvas.addEventListener('touchstart', e => {
 
   if (touchX < middle) {
     keys['ArrowLeft'] = true;
-    setTimeout(() => keys['ArrowLeft'] = false, 150);
   } else {
     keys['ArrowRight'] = true;
-    setTimeout(() => keys['ArrowRight'] = false, 150);
   }
+});
+
+canvas.addEventListener('touchend', () => {
+  keys['ArrowLeft'] = false;
+  keys['ArrowRight'] = false;
 });
 
 // 🎮 Boutons HUD
