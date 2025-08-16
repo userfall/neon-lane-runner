@@ -6,14 +6,192 @@
   <title>Neon Lane Runner</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/game.css" />
-  <script type="module" src="js/firebase-config.js"></script>
-  <script type="module" src="js/authenticator.js"></script>
-  <script type="module" src="js/game.js"></script>
+  <style>
+    :root {
+      --accent: #00f0ff;
+      --accent2: #38f9d7;
+      --text: #fff;
+      --card-bg: rgba(255,255,255,0.02);
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: #0b0b0c;
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      font-size: 20px;
+      color: var(--accent);
+      text-shadow: 0 0 10px var(--accent);
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid var(--accent);
+      border-top: 6px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #loginDiv {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .login-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      box-shadow: 0 12px 42px rgba(0,0,0,0.6);
+      padding: 22px;
+      width: 95%;
+      max-width: 980px;
+      display: flex;
+      gap: 22px;
+      align-items: center;
+      border: 1px solid rgba(255,255,255,0.03);
+      backdrop-filter: blur(6px);
+      flex-wrap: wrap;
+    }
+
+    .logo-block {
+      flex: 0 0 260px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 18px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(45,156,219,0.08), rgba(56,239,125,0.03));
+      box-shadow: 0 6px 18px rgba(45,156,219,0.06);
+    }
+
+    .fb-logo {
+      font-size: 44px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -1.5px;
+      text-shadow: 0 4px 18px rgba(0,255,255,0.2);
+    }
+
+    .logo-sub {
+      color: rgba(255,255,255,0.55);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .logo-hint {
+      font-size: 12px;
+      color: rgba(255,255,255,0.45);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .login-form {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .login-form input,
+    .login-form select {
+      padding: 14px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      color: var(--text);
+      font-size: 15px;
+      flex: 1;
+    }
+
+    .btn {
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .primary {
+      background: linear-gradient(90deg,var(--accent),var(--accent2));
+      color: #0b1220;
+      box-shadow: 0 10px 30px rgba(0,255,255,0.1);
+    }
+
+    .secondary {
+      background: linear-gradient(90deg,#43e97b,#38f9d7);
+      color: #072022;
+    }
+
+    #loginMsg {
+      min-height: 20px;
+      font-size: 14px;
+      color: #ff8a8a;
+      text-align: center;
+    }
+
+    footer {
+      color: rgba(255,255,255,0.45);
+      font-size: 12px;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    #gameDiv {
+      display: none;
+    }
+
+    @media (max-width: 800px) {
+      .login-card {
+        flex-direction: column;
+        padding: 14px;
+        max-width: 96vw;
+      }
+
+      .logo-block {
+        width: 100%;
+        padding: 10px;
+      }
+
+      .login-form {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
 
 <!-- ⏳ Loader -->
-<div id="loader" style="display:none;">
+<div id="loader">
   <div class="spinner"></div>
   <p>Chargement...</p>
 </div>
@@ -24,38 +202,35 @@
     <div class="logo-block">
       <div class="fb-logo">Neon Lane</div>
       <div class="logo-sub">Runner — by Kabir & Samuel</div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:8px;text-align:center">
-        Connexion rapide — pseudo uniquement
-      </div>
+      <div class="logo-hint">Connexion rapide — pseudo uniquement</div>
     </div>
     <div class="login-form">
-      <div style="display:flex; gap:10px; align-items:center;">
-        <input id="loginName" type="text" placeholder="Pseudo" style="flex:1;">
-        <input id="loginPassword" type="password" placeholder="Mot de passe" style="width:220px;">
+      <div class="form-row">
+        <input id="loginName" type="text" placeholder="Pseudo" />
+        <input id="loginPassword" type="password" placeholder="Mot de passe" />
       </div>
       <div class="form-row">
         <button class="btn primary" id="loginBtn">Connexion</button>
         <button class="btn secondary" id="signupBtn">Créer un compte</button>
       </div>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <label style="font-size:13px;color:rgba(255,255,255,0.6);">Langue</label>
-        <select id="langSelect" style="padding:6px;border-radius:6px;background:rgba(255,255,255,0.02);color:var(--text);border:1px solid rgba(255,255,255,0.03)">
+      <div class="form-row">
+        <label>Langue</label>
+        <select id="langSelect">
           <option value="fr">français</option>
           <option value="en">english</option>
         </select>
-        <label style="margin-left:auto; font-size:13px; color:rgba(255,255,255,0.6);">Son</label>
-        <input type="checkbox" id="soundToggle" checked>
+        <label style="margin-left:auto;">Son</label>
+        <input type="checkbox" id="soundToggle" checked />
       </div>
       <div id="loginMsg"></div>
-      <footer>© 2025 Kabir &amp; Samuel Deporno — All rights reserved</footer>
+      <footer>© 2025 Kabir & Samuel Deporno — All rights reserved</footer>
     </div>
   </div>
 </div>
 
 <!-- 🎮 Jeu -->
-<div id="gameDiv" style="display:none;">
+<div id="gameDiv">
   <canvas id="gameCanvas"></canvas>
-  <!-- HUD, paramètres, pause, victoire, etc. sont gérés dans game.js -->
 </div>
 
 <script type="module">
@@ -95,7 +270,7 @@
     try {
       await signupUser();
       hideLoader();
-      loginMsg.textContent = "Inscription réussie ! Connecte-toi.";
+            loginMsg.textContent = "Inscription réussie ! Connecte-toi.";
       loginMsg.style.color = "#9fffb2";
     } catch (err) {
       hideLoader();
@@ -107,3 +282,4 @@
 
 </body>
 </html>
+     
