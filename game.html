@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/game.css" />
 
-  <!-- Firebase compat (si tu veux garder l'auth plus tard) -->
+  <!-- Firebase compat (auth uniquement si besoin) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script>
@@ -27,6 +27,7 @@
   <script type="module" src="js/game.js"></script>
 </head>
 <body>
+  <!-- 🎮 Canvas principal -->
   <canvas id="gameCanvas"></canvas>
 
   <!-- 🧠 HUD -->
@@ -52,5 +53,8 @@
     <p>🎉 Bravo ! Tu as atteint un score incroyable !</p>
     <button id="replayBtn">Rejouer</button>
   </div>
+
+  <!-- 🌌 Fond animé -->
+  <div id="backgroundOverlay"></div>
 </body>
 </html>
