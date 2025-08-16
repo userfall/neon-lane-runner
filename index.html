@@ -1,350 +1,138 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Neon Lane Runner</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <title>Connexion - Space Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    :root {
-      --accent: #00f0ff;
-      --accent2: #38f9d7;
-      --text: #fff;
-      --card-bg: rgba(255,255,255,0.02);
-    }
-
-    body, html {
+    body {
       margin: 0;
-      padding: 0;
-      font-family: 'Orbitron', sans-serif;
-      background: #0b0b0c;
-      color: var(--text);
-      overflow: hidden;
-    }
-
-    #loader {
-      position: fixed;
-      inset: 0;
-      background: #000;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #111, #222, #000);
+      color: white;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      z-index: 9999;
-      font-size: 20px;
-      color: var(--accent);
-      text-shadow: 0 0 10px var(--accent);
+      align-items: center;
+      height: 100vh;
     }
-
-    .spinner {
-      width: 60px;
-      height: 60px;
-      border: 6px solid var(--accent);
-      border-top: 6px solid transparent;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    .container {
+      background: rgba(0,0,0,0.8);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,255,255,0.5);
+      width: 350px;
+      text-align: center;
+    }
+    h2 {
       margin-bottom: 20px;
+      color: #0ff;
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    #loginDiv {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-    }
-
-    .login-card {
-      background: var(--card-bg);
-      border-radius: 14px;
-      box-shadow: 0 12px 42px rgba(0,0,0,0.6);
-      padding: 22px;
-      width: 95%;
-      max-width: 980px;
-      display: flex;
-      gap: 22px;
-      align-items: center;
-      border: 1px solid rgba(255,255,255,0.03);
-      backdrop-filter: blur(6px);
-      flex-wrap: wrap;
-    }
-
-    .logo-block {
-      flex: 0 0 260px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      padding: 18px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, rgba(45,156,219,0.08), rgba(56,239,125,0.03));
-      box-shadow: 0 6px 18px rgba(45,156,219,0.06);
-    }
-
-    .fb-logo {
-      font-size: 44px;
-      font-weight: 800;
-      color: var(--accent);
-      letter-spacing: -1.5px;
-      text-shadow: 0 4px 18px rgba(0,255,255,0.2);
-    }
-
-    .logo-sub {
-      color: rgba(255,255,255,0.55);
-      font-size: 13px;
-      text-align: center;
-    }
-
-    .logo-hint {
-      font-size: 12px;
-      color: rgba(255,255,255,0.45);
-      text-align: center;
-      margin-top: 8px;
-    }
-
-    .login-form {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .form-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .login-form input,
-    .login-form select {
-      padding: 14px 12px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: rgba(255,255,255,0.02);
-      color: var(--text);
-      font-size: 15px;
-      flex: 1;
-    }
-
-    .btn {
-      padding: 12px 14px;
-      border-radius: 8px;
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
       border: none;
+      border-radius: 8px;
+      outline: none;
+      background: #333;
+      color: white;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      background: #0ff;
+      color: #000;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: 700;
+      font-weight: bold;
+      transition: 0.3s;
     }
-
-    .primary {
-      background: linear-gradient(90deg,var(--accent),var(--accent2));
-      color: #0b1220;
-      box-shadow: 0 10px 30px rgba(0,255,255,0.1);
+    button:hover {
+      background: #00cccc;
     }
-
-    .secondary {
-      background: linear-gradient(90deg,#43e97b,#38f9d7);
-      color: #072022;
-    }
-
-    #loginMsg {
-      min-height: 20px;
+    p {
+      margin-top: 15px;
       font-size: 14px;
-      color: #ff8a8a;
-      text-align: center;
     }
-
-    footer {
-      color: rgba(255,255,255,0.45);
-      font-size: 12px;
-      text-align: center;
-      margin-top: 6px;
+    a {
+      color: #0ff;
+      cursor: pointer;
     }
-
-    #gameDiv {
+    .hidden {
       display: none;
-      position: fixed;
-      inset: 0;
-      background: #000;
-      z-index: 5;
-    }
-
-    canvas {
-      display: block;
-      margin: auto;
-      background: linear-gradient(180deg,#0b0b0c,#121214);
-      border-radius: 14px;
-      box-shadow: 0 12px 48px rgba(0,0,0,0.7), 0 0 48px rgba(45,156,219,0.06) inset;
-      width: calc(min(1200px, 98vw));
-      height: calc(min(820px, 78vh));
-      touch-action: none;
-    }
-
-    @media (max-width: 800px) {
-      .login-card {
-        flex-direction: column;
-        padding: 14px;
-        max-width: 96vw;
-      }
-
-      .logo-block {
-        width: 100%;
-        padding: 10px;
-      }
-
-      .login-form {
-        width: 100%;
-      }
-
-      canvas {
-        height: calc(min(520px, 62vh));
-        width: calc(min(980px, 98vw));
-      }
     }
   </style>
 </head>
 <body>
-
-<!-- ⏳ Loader -->
-<div id="loader">
-  <div class="spinner"></div>
-  <p>Chargement...</p>
-</div>
-
-<!-- 🔐 Connexion / Inscription -->
-<div id="loginDiv">
-  <div class="login-card">
-    <div class="logo-block">
-      <div class="fb-logo">Neon Lane</div>
-      <div class="logo-sub">Runner — by Kabir & Samuel</div>
-      <div class="logo-hint">Connexion rapide — pseudo uniquement</div>
+  <div class="container">
+    <!-- Connexion -->
+    <div id="loginForm">
+      <h2>Connexion</h2>
+      <input type="text" id="loginUser" placeholder="Nom d'utilisateur" required>
+      <input type="password" id="loginPass" placeholder="Mot de passe" required>
+      <button onclick="login()">Se connecter</button>
+      <p>Pas encore de compte ? <a onclick="showRegister()">Inscription</a></p>
     </div>
-    <div class="login-form">
-      <div class="form-row">
-        <input id="loginName" type="text" placeholder="Pseudo" />
-        <input id="loginPassword" type="password" placeholder="Mot de passe" />
-      </div>
-      <div class="form-row">
-        <button class="btn primary" id="loginBtn">Connexion</button>
-        <button class="btn secondary" id="signupBtn">Créer un compte</button>
-      </div>
-      <div class="form-row">
-        <label>Langue</label>
-        <select id="langSelect">
-          <option value="fr">français</option>
-          <option value="en">english</option>
-        </select>
-        <label style="margin-left:auto;">Son</label>
-        <input type="checkbox" id="soundToggle" checked />
-      </div>
-      <div id="loginMsg"></div>
-      <footer>© 2025 Kabir & Samuel Deporno — All rights reserved</footer>
+
+    <!-- Inscription -->
+    <div id="registerForm" class="hidden">
+      <h2>Inscription</h2>
+      <input type="text" id="regUser" placeholder="Nom d'utilisateur" required>
+      <input type="password" id="regPass" placeholder="Mot de passe" required>
+      <button onclick="register()">S'inscrire</button>
+      <p>Déjà un compte ? <a onclick="showLogin()">Connexion</a></p>
     </div>
   </div>
-</div>
 
-<!-- 🎮 Jeu -->
-<div id="gameDiv">
-  <canvas id="gameCanvas"></canvas>
-</div>
-
-<script type="module">
-  import { startGame } from './js/game.js';
-
-  // Gestion utilisateurs avec localStorage
-  function getUsers() {
-    return JSON.parse(localStorage.getItem("users") || "{}");
-  }
-  function saveUsers(users) {
-    localStorage.setItem("users", JSON.stringify(users));
-  }
-
-  async function loginUser() {
-    const name = document.getElementById("loginName").value.trim();
-    const password = document.getElementById("loginPassword").value.trim();
-    if (!name || !password) throw new Error("Veuillez remplir tous les champs.");
-    if (password.length < 4) throw new Error("Mot de passe trop court.");
-
-    const users = getUsers();
-    if (!users[name]) throw new Error("Utilisateur inconnu. Inscris-toi d'abord !");
-    if (users[name] !== password) throw new Error("Mot de passe incorrect.");
-    return { displayName: name };
-  }
-
-  async function signupUser() {
-    const name = document.getElementById("loginName").value.trim();
-    const password = document.getElementById("loginPassword").value.trim();
-    if (!name || !password) throw new Error("Veuillez remplir tous les champs.");
-    if (password.length < 4) throw new Error("Mot de passe trop court.");
-
-    const users = getUsers();
-    if (users[name]) throw new Error("Ce pseudo est déjà pris !");
-    users[name] = password;
-    saveUsers(users);
-    return { displayName: name };
-  }
-
-  function showLoader(message = "Chargement...") {
-    const loader = document.getElementById("loader");
-    if (loader) {
-      loader.style.display = "flex";
-      loader.querySelector("p").textContent = message;
+  <script>
+    // Affiche formulaire inscription
+    function showRegister() {
+      document.getElementById("loginForm").classList.add("hidden");
+      document.getElementById("registerForm").classList.remove("hidden");
     }
-  }
 
-  function hideLoader() {
-    const loader = document.getElementById("loader");
-    if (loader) {
-      loader.style.display = "none";
+    // Affiche formulaire connexion
+    function showLogin() {
+      document.getElementById("registerForm").classList.add("hidden");
+      document.getElementById("loginForm").classList.remove("hidden");
     }
-  }
 
-  function startSession(user) {
-    document.getElementById("loginDiv").style.display = "none";
-    document.getElementById("gameDiv").style.display = "block";
-    startGame(user.displayName);
-  }
+    // Inscription
+    function register() {
+      let user = document.getElementById("regUser").value.trim();
+      let pass = document.getElementById("regPass").value.trim();
 
-  document.getElementById("loginBtn").addEventListener("click", async (e) => {
-    e.preventDefault();
-    const loginMsg = document.getElementById("loginMsg");
-    loginMsg.textContent = "";
-    showLoader("Connexion...");
-    try {
-      const user = await loginUser();
-      hideLoader();
-      startSession(user);
-    } catch (err) {
-      hideLoader();
-      loginMsg.textContent = err.message;
-      loginMsg.style.color = "#ff8a8a";
+      if (!user || !pass) {
+        alert("Remplis tous les champs !");
+        return;
+      }
+
+      if (localStorage.getItem("user_" + user)) {
+        alert("Ce nom d'utilisateur existe déjà !");
+        return;
+      }
+
+      localStorage.setItem("user_" + user, pass);
+      alert("Inscription réussie ✅ ! Connecte-toi.");
+      showLogin();
     }
-  });
 
-  document.getElementById("signupBtn").addEventListener("click", async (e) => {
-    e.preventDefault();
-    const loginMsg = document.getElementById("loginMsg");
-    loginMsg.textContent = "";
-    showLoader("Inscription...");
-    try {
-      await signupUser();
-      hideLoader();
-      loginMsg.textContent = "Inscription réussie ! Connecte-toi.";
-      loginMsg.style.color = "#9fffb2";
-    } catch (err) {
-      hideLoader();
-      loginMsg.textContent = err.message;
-      loginMsg.style.color = "#ff8a8a";
+    // Connexion
+    function login() {
+      let user = document.getElementById("loginUser").value.trim();
+      let pass = document.getElementById("loginPass").value.trim();
+
+      let savedPass = localStorage.getItem("user_" + user);
+
+      if (savedPass && savedPass === pass) {
+        localStorage.setItem("currentUser", user);
+        window.location.href = "game.html"; // 🔥 redirection vers ton jeu
+      } else {
+        alert("Identifiants incorrects ❌");
+      }
     }
-  });
-
-  window.addEventListener("load", () => {
-    hideLoader();
-  });
-</script>
+  </script>
 </body>
 </html>
