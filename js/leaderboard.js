@@ -1,15 +1,9 @@
-import { db, auth } from './firebase-config.js';
-import {
-  collection,
-  doc,
-  setDoc,
-  getDocs,
-  query,
-  orderBy,
-  limit
-} from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+import { getDatabase, ref, set, get, child, onValue } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+import { app, auth } from './firebase-config.js';
 
-// 🔐 Sanitize pseudo
+const db = getDatabase(app);
+
+// 🔐 Nettoyage du pseudo
 function sanitizeKey(name) {
   return name.replace(/[.#$/[\]]/g, "_");
 }
@@ -21,16 +15,21 @@ export async function saveScore(score) {
 
   const pseudo = user.displayName || user.email.split('@')[0];
   const safePseudo = sanitizeKey(pseudo);
-  const ref = doc(db, "leaderboard", safePseudo);
+  const refPath = ref(db, 'leaderboard/' + safePseudo);
 
   try {
-    await setDoc(ref, {
-      pseudo,
-      score: Number(score),
-      timestamp: Date.now()
-    }, { merge: true });
+    const snapshot = await get(refPath);
+    const existing = snapshot.val();
+
+    if (!existing || score > (existing.score || 0)) {
+      await set(refPath, {
+        pseudo,
+        score: Number(score),
+        timestamp: Date.now()
+      });
+    }
   } catch (err) {
-    console.error("Erreur sauvegarde score :", err);
+    console.error("Erreur sauvegarde score RTDB:", err);
   }
 }
 
@@ -42,25 +41,34 @@ export async function loadLeaderboard() {
   boardEl.innerHTML = "Chargement...";
 
   try {
-    const q = query(collection(db, "leaderboard"), orderBy("score", "desc"), limit(10));
-    const snapshot = await getDocs(q);
+    const snapshot = await get(ref(db, 'leaderboard'));
+    const data = snapshot.val();
+
+    if (!data) {
+      boardEl.innerHTML = "<p>Aucun score enregistré.</p>";
+      return;
+    }
+
+    const entries = Object.values(data)
+      .filter(e => e && typeof e.score === 'number')
+      .sort((a, b) => b.score - a.score || b.timestamp - a.timestamp)
+      .slice(0, 10);
 
     let html = "<ol>";
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const isCurrent = auth.currentUser &&
-        (auth.currentUser.displayName === data.pseudo ||
-         auth.currentUser.email.split('@')[0] === data.pseudo);
+    const current = auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0];
 
+    entries.forEach(entry => {
+      const isCurrent = current && sanitizeKey(current) === sanitizeKey(entry.pseudo);
       html += `<li${isCurrent ? ' style="color:#0f0;font-weight:bold;"' : ''}>
-        ${data.pseudo} — <b>${data.score}</b> pts
+        ${entry.pseudo} — <b>${entry.score}</b> pts
       </li>`;
     });
+
     html += "</ol>";
     boardEl.innerHTML = html;
   } catch (err) {
     boardEl.innerHTML = `<span style="color:red">Erreur chargement classement</span>`;
-    console.error("Erreur leaderboard :", err);
+    console.error("Erreur leaderboard RTDB:", err);
   }
 }
 
