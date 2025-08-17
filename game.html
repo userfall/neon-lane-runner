@@ -6,8 +6,96 @@
   <title>Neon Lane Runner</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/game.css" />
+
+  <style>
+    /* Loader animation */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    /* Overlays */
+    #pauseOverlay, #victoryOverlay, #congratsOverlay, #statsPanel, #leaderboardDiv {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      color: #0ff;
+      font-family: 'Orbitron', sans-serif;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    #statsPanel {
+      background: rgba(0,0,0,0.9);
+      padding: 20px;
+      border-radius: 12px;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: none;
+      color: #0ff;
+    }
+
+    #leaderboardDiv {
+      background: rgba(0,0,0,0.95);
+      padding: 20px;
+      border-radius: 12px;
+      width: 300px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+
+    #hud {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #0ff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      z-index: 100;
+      display: flex;
+      gap: 20px;
+    }
+
+    #paramPanel {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    button {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 16px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #00f0ff;
+      color: #000;
+    }
+
+  </style>
 </head>
 <body>
+
   <!-- 🎮 Canvas principal -->
   <canvas id="gameCanvas"></canvas>
 
@@ -25,7 +113,7 @@
     <button id="startBtn">START</button>
   </div>
 
-  <!-- ⏸️ Bouton Pause -->
+  <!-- ⏸️ Boutons Pause / Leaderboard -->
   <button id="pauseBtn" style="display:none;">Pause</button>
   <button id="leaderboardBtn">Classement</button>
 
@@ -49,7 +137,7 @@
   </div>
 
   <!-- 🚀 Panneau spécial > 5000 pts -->
-  <div id="congratsOverlay" style="display:none;">
+  <div id="congratsOverlay">
     <canvas></canvas>
     <div class="message-overlay">🚀 Tu as explosé les 5000 points !</div>
   </div>
@@ -62,36 +150,11 @@
     <button id="closeLeaderboardBtn">Fermer</button>
   </div>
 
-  <!-- ⏳ Loader -->
-  <div id="loader" style="
-    position: fixed;
-    inset: 0;
-    background: #000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    font-size: 18px;
-    color: #00f0ff;
-    text-shadow: 0 0 10px #00f0ff;
-  ">
-    <div style="
-      width: 50px;
-      height: 50px;
-      border: 5px solid #00f0ff;
-      border-top: 5px solid transparent;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 16px;
-    "></div>
-    <p>Chargement du jeu...</p>
-  </div>
-
   <!-- 📦 Scripts -->
   <script type="module" src="js/firebase-config.js"></script>
   <script type="module" src="js/settings.js"></script>
   <script type="module" src="js/leaderboard.js"></script>
   <script type="module" src="js/game.js"></script>
+
 </body>
 </html>
