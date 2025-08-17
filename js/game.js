@@ -1,24 +1,19 @@
-// ========================
-// IMPORTS
-// ========================
 import { gameSettings, loadSettings } from './settings.js';
 import { saveScore, loadLeaderboard, setupLeaderboardClose } from './leaderboard.js';
 import { auth } from './firebase-config.js';
 
-// ========================
-// FAVICON
-// ========================
+// 🔹 Favicon
 const link = document.createElement('link');
 link.rel = 'icon';
 link.type = 'image/x-icon';
 link.href = 'assets/images/favicon.ico';
 document.head.appendChild(link);
 
-// ========================
-// CANVAS
-// ========================
+// 🎮 CANVAS
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+// --- resize canvas ---
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -26,9 +21,7 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// ========================
-// SONS
-// ========================
+// 🎵 Sons
 const sounds = {
   hit: new Audio('./assets/sounds/hit.wav'),
   music: new Audio('./assets/sounds/music.mp3'),
@@ -40,16 +33,12 @@ const sounds = {
 sounds.music.loop = true;
 sounds.music.volume = 0.5;
 
-// ========================
-// FOND
-// ========================
+// 📸 Fond
 const backgroundImg = new Image();
 backgroundImg.src = './assets/images/background.png';
 let bgY = 0;
 
-// ========================
-// HUD
-// ========================
+// 🧠 HUD
 const scoreEl = document.getElementById('score');
 const livesEl = document.getElementById('lives');
 const startBtn = document.getElementById('startBtn');
@@ -66,9 +55,7 @@ const pauseOverlay = document.getElementById('pauseOverlay');
 const resumeBtn = document.getElementById('resumeBtn');
 const leaderboardBtn = document.getElementById('leaderboardBtn');
 
-// ========================
-// VARIABLES DE JEU
-// ========================
+// 🧩 Variables
 let player, obstacles, boss;
 let score = 0, lives = gameSettings.lives || 3, level = 1;
 let keys = {};
@@ -76,12 +63,11 @@ let gameStarted = false;
 let fireworksLaunched = false;
 let gamePaused = false;
 
-// ========================
-// CONTROLES
-// ========================
+// 🎮 Contrôles clavier
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
+// 📱 Contrôles tactiles
 canvas.addEventListener('touchstart', e => {
   if (!e.touches.length) return;
   const touchX = e.touches[0].clientX;
@@ -93,14 +79,12 @@ canvas.addEventListener('touchend', () => {
   keys['ArrowRight'] = false;
 });
 
-// ========================
-// BOUTONS
-// ========================
+// 🟢 Événements boutons
 startBtn.addEventListener('click', startGame);
 musicToggle.addEventListener('click', () => {
   gameSettings.musicOn = !gameSettings.musicOn;
   musicToggle.textContent = gameSettings.musicOn ? "Musique ON" : "Musique OFF";
-  if (gameSettings.musicOn) sounds.music.play(); else sounds.music.pause();
+  gameSettings.musicOn ? sounds.music.play() : sounds.music.pause();
 });
 fxToggle.addEventListener('click', () => {
   gameSettings.fxOn = !gameSettings.fxOn;
@@ -132,7 +116,7 @@ leaderboardBtn.addEventListener('click', () => {
 setupLeaderboardClose();
 
 // ========================
-// DEMARRAGE DU JEU
+// START GAME
 // ========================
 function startGame() {
   gameStarted = true;
@@ -163,7 +147,7 @@ function startGame() {
 }
 
 // ========================
-// STATS LOCALES
+// UPDATE STATS
 // ========================
 function updateLocalStats() {
   let played = Number(localStorage.getItem("gamesPlayed")) || 0;
@@ -180,6 +164,9 @@ function updateLocalStats() {
   document.getElementById("bestScore").textContent = best;
 }
 
+// ========================
+// SHOW NEW RECORD
+// ========================
 function showNewRecord(score) {
   if (!gameSettings.fxOn) return;
   sounds.levelup.play();
@@ -204,16 +191,17 @@ function gameLoop() {
   if (bgY >= canvas.height) bgY = 0;
   drawBackground();
 
-  // Joueur
+  // Mouvement joueur
   if (keys['ArrowLeft'] && player.x > 0) player.x -= gameSettings.gameSpeed;
   if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += gameSettings.gameSpeed;
 
+  // Dessiner joueur
   ctx.fillStyle = "#0ff";
   ctx.fillRect(player.x, player.y, player.width, player.height);
 
   moveBoss();
 
-  // Obstacles
+  // Spawn obstacles
   if (Math.random() * 100 < gameSettings.spawnRate / 20) {
     obstacles.push({ x: Math.random() * (canvas.width - 30), y: -30, width: 30, height: 30 });
   }
@@ -223,6 +211,7 @@ function gameLoop() {
     ctx.fillStyle = "#f00";
     ctx.fillRect(o.x, o.y, o.width, o.height);
 
+    // Collision
     if (
       player.x < o.x + o.width &&
       player.x + player.width > o.x &&
@@ -236,7 +225,7 @@ function gameLoop() {
     if (o.y > canvas.height) obstacles.splice(i, 1);
   });
 
-  // HUD
+  // Score & HUD
   score++;
   scoreEl.textContent = "Score: " + score;
   livesEl.textContent = "Vies: " + lives;
@@ -248,7 +237,7 @@ function gameLoop() {
 }
 
 // ========================
-// GESTION NIVEAU
+// UPDATE LEVEL
 // ========================
 function updateLevel() {
   if (score % 600 === 0 && score !== 0) {
@@ -272,7 +261,7 @@ function showLevelUp(level) {
 }
 
 // ========================
-// FIN DE JEU
+// END GAME
 // ========================
 function endGame() {
   gameStarted = false;
@@ -291,7 +280,7 @@ function endGame() {
 
   updateLocalStats();
 
-  // 🔹 Sauvegarde automatique dans Firebase si connecté
+  // 🔹 Sauvegarde automatique du score dans Firebase
   if (auth.currentUser) saveScore(score);
 
   gameSettings.gameSpeed = 2.5;
@@ -332,7 +321,7 @@ function moveBoss() {
 }
 
 // ========================
-// FEUX D’ARTIFICE
+// FEUX D'ARTIFICE
 // ========================
 function launchFireworks() {
   const ctxF = fireworksCanvas.getContext('2d');
@@ -378,11 +367,11 @@ function showFireworksMessage() {
     z-index:10000; animation: fadeIn 0.5s ease-out;
   `;
 
-  const canvas = document.createElement('canvas');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  canvas.style.position = "absolute"; canvas.style.top = "0"; canvas.style.left = "0";
-  overlay.appendChild(canvas);
+  const canvasMsg = document.createElement('canvas');
+  canvasMsg.width = window.innerWidth;
+  canvasMsg.height = window.innerHeight;
+  canvasMsg.style.position = "absolute"; canvasMsg.style.top = "0"; canvasMsg.style.left = "0";
+  overlay.appendChild(canvasMsg);
 
   const msg = document.createElement('div');
   msg.textContent = `🚀 Tu as explosé les 5000 points !`;
@@ -393,22 +382,22 @@ function showFireworksMessage() {
   overlay.appendChild(msg);
   document.body.appendChild(overlay);
 
-  const ctx = canvas.getContext("2d");
+  const ctxMsg = canvasMsg.getContext("2d");
   let particles = [];
-  for (let i=0;i<120;i++) particles.push({
-    x: canvas.width/2, y: canvas.height/2,
+  for (let i = 0; i < 120; i++) particles.push({
+    x: canvasMsg.width/2, y: canvasMsg.height/2,
     dx: (Math.random()-0.5)*8, dy: (Math.random()-0.5)*8,
     radius: Math.random()*3+2,
     color: `hsl(${Math.random()*360},100%,50%)`, life:100
   });
 
   function animateFireworks() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctxMsg.clearRect(0,0,canvasMsg.width,canvasMsg.height);
     particles.forEach(p=>{
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,p.radius,0,Math.PI*2);
-      ctx.fillStyle=p.color;
-      ctx.fill();
+      ctxMsg.beginPath();
+      ctxMsg.arc(p.x,p.y,p.radius,0,Math.PI*2);
+      ctxMsg.fillStyle=p.color;
+      ctxMsg.fill();
       p.x+=p.dx; p.y+=p.dy; p.life--;
     });
     particles = particles.filter(p=>p.life>0);
