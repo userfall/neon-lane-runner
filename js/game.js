@@ -9,6 +9,22 @@ link.type = 'image/x-icon';
 link.href = 'assets/images/favicon.ico'; // Place ton favicon ici
 document.head.appendChild(link);
 
+// 🎮 CANVAS
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// --- FONCTION resizeCanvas ---
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+// Appel immédiat pour initialiser la taille du canvas
+resizeCanvas();
+
+// Adapter le canvas si la fenêtre est redimensionnée
+window.addEventListener('resize', resizeCanvas);
+
 // 🎵 SONS
 const sounds = {
   hit: new Audio('./assets/sounds/hit.wav'),
@@ -18,17 +34,6 @@ const sounds = {
 };
 sounds.music.loop = true;
 sounds.music.volume = 0.5;
-
-// 🎮 CANVAS
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
 
 // 📸 FOND
 const backgroundImg = new Image();
@@ -75,6 +80,7 @@ canvas.addEventListener('touchend', () => {
   keys['ArrowLeft'] = false;
   keys['ArrowRight'] = false;
 });
+
 
 // 🎯 Événements boutons
 startBtn.addEventListener('click', startGame);
