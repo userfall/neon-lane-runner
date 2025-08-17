@@ -3,6 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
+// Configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCbNweC0aD8f_OGvbvmBVNSKbaMP_A4khI",
   authDomain: "neonlanerunner.firebaseapp.com",
@@ -12,6 +13,12 @@ const firebaseConfig = {
   appId: "1:916907926117:web:43f1d08ed90b864a985c8c"
 };
 
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Initialisation
+const app = initializeApp(firebaseConfig);
+
+// Services Firebase
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Export
+export { app, auth, db };
