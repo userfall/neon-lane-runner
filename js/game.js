@@ -2,6 +2,13 @@ import { gameSettings, loadSettings } from './settings.js';
 import { saveScore, loadLeaderboard, setupLeaderboardClose } from './leaderboard.js';
 import { auth } from './firebase-config.js';
 
+// 🔹 Favicon (évite l'erreur 404)
+const link = document.createElement('link');
+link.rel = 'icon';
+link.type = 'image/x-icon';
+link.href = 'assets/images/favicon.ico'; // Place ton favicon ici
+document.head.appendChild(link);
+
 // 🎵 SONS
 const sounds = {
   hit: new Audio('./assets/sounds/hit.wav'),
@@ -15,14 +22,20 @@ sounds.music.volume = 0.5;
 // 🎮 CANVAS
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
 resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
 // 📸 FOND
 const backgroundImg = new Image();
 backgroundImg.src = './assets/images/background.png';
 let bgY = 0;
 
-// 🧠 Éléments HUD
+// 🧠 HUD
 const scoreEl = document.getElementById('score');
 const livesEl = document.getElementById('lives');
 const startBtn = document.getElementById('startBtn');
@@ -37,7 +50,6 @@ const statsPanel = document.getElementById('statsPanel');
 const pauseBtn = document.getElementById('pauseBtn');
 const pauseOverlay = document.getElementById('pauseOverlay');
 const resumeBtn = document.getElementById('resumeBtn');
-const loader = document.getElementById('loader');
 const leaderboardBtn = document.getElementById('leaderboardBtn');
 
 // 🧩 Variables de jeu
@@ -52,7 +64,7 @@ let gamePaused = false;
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
-// 📱 Contrôle tactile
+// 📱 Contrôles tactiles
 canvas.addEventListener('touchstart', e => {
   if (!e.touches.length) return;
   const touchX = e.touches[0].clientX;
@@ -111,7 +123,7 @@ leaderboardBtn.addEventListener('click', () => {
 
 setupLeaderboardClose();
 
-// 🔥 FONCTIONS PRINCIPALES
+// 🔹 FONCTIONS PRINCIPALES
 function startGame() {
   gameStarted = true;
   score = 0;
@@ -209,25 +221,25 @@ function animateCountdown(num, callback) {
   }, 1000);
 }
 
+// 🔹 GAME LOOP
 function gameLoop() {
   if (!gameStarted || gamePaused) return;
 
-  // 🎨 Background
+  // Background
   bgY += gameSettings.gameSpeed / 2;
   if (bgY >= canvas.height) bgY = 0;
   drawBackground();
 
-  // 🕹️ Déplacement joueur
+  // Player
   if (keys['ArrowLeft'] && player.x > 0) player.x -= gameSettings.gameSpeed;
   if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += gameSettings.gameSpeed;
 
-  // 👤 Player
   ctx.fillStyle = "#0ff";
   ctx.fillRect(player.x, player.y, player.width, player.height);
 
   moveBoss();
 
-  // 🟥 Obstacles
+  // Obstacles
   if (Math.random() * 100 < gameSettings.spawnRate / 20) {
     obstacles.push({ x: Math.random() * (canvas.width - 30), y: -30, width: 30, height: 30 });
   }
@@ -249,7 +261,6 @@ function gameLoop() {
       if (gameSettings.fxOn) sounds.hit.play();
     }
 
-    // Hors écran
     if (o.y > canvas.height) obstacles.splice(i, 1);
   });
 
@@ -264,6 +275,7 @@ function gameLoop() {
   else requestAnimationFrame(gameLoop);
 }
 
+// 🔹 LEVEL UP
 function updateLevel() {
   if (score !== 0 && score % 600 === 0) {
     level++;
@@ -291,6 +303,7 @@ function showLevelUp(level) {
   setTimeout(() => overlay.remove(), 1500);
 }
 
+// 🔹 END GAME
 function endGame() {
   gameStarted = false;
   paramPanel.style.display = 'flex';
@@ -300,7 +313,6 @@ function endGame() {
   if (gameSettings.musicOn) sounds.music.pause();
 
   if (score >= 5000) showFireworksMessage();
-
   if (score >= 2000 && !fireworksLaunched) {
     fireworksLaunched = true;
     victoryOverlay.style.display = 'flex';
@@ -316,12 +328,14 @@ function endGame() {
   drawBackground();
 }
 
+// 🔹 DRAW BACKGROUND
 function drawBackground() {
   if (!backgroundImg.complete) return;
   ctx.drawImage(backgroundImg, 0, bgY - canvas.height, canvas.width, canvas.height);
   ctx.drawImage(backgroundImg, 0, bgY, canvas.width, canvas.height);
 }
 
+// 🔹 BOSS
 function moveBoss() {
   const bossSpeed = 0.8 + Math.floor(score / 600) * 0.2;
   if (player.x < boss.x - 10) boss.x -= bossSpeed;
@@ -331,7 +345,6 @@ function moveBoss() {
   ctx.fillStyle = "#ff0";
   ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
 
-  // Collision boss
   if (
     player.x < boss.x + boss.width &&
     player.x + player.width > boss.x &&
@@ -345,6 +358,7 @@ function moveBoss() {
   if (boss.y > canvas.height) boss.y = -100;
 }
 
+// 🔹 FIREWORKS
 function launchFireworks() {
   if (!fireworksCanvas) return;
   const ctxF = fireworksCanvas.getContext('2d');
@@ -379,6 +393,7 @@ function launchFireworks() {
   animateFireworks();
 }
 
+// 🔹 MESSAGE FIREWORKS
 function showFireworksMessage() {
   const overlay = document.createElement('div');
   Object.assign(overlay.style, {
