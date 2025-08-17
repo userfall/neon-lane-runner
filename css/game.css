@@ -1,94 +1,146 @@
-body {
+body, html {
   margin: 0;
   padding: 0;
   font-family: 'Orbitron', sans-serif;
-  background: linear-gradient(135deg,#0f0c29,#302b63,#24243e);
-  color: #0ff;
+  background: #0b0b0c;
+  color: #fff;
   overflow: hidden;
+  font-size: 14px;
 }
 
-canvas {
+#gameCanvas {
   display: block;
+  margin: auto;
+  background: linear-gradient(180deg,#0b0b0c,#121214);
+  border-radius: 14px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.7), 0 0 48px rgba(45,156,219,0.06) inset;
   width: 100vw;
   height: 100vh;
+  touch-action: none;
 }
 
-/* HUD */
 #hud {
   position: absolute;
   top: 10px;
   left: 10px;
-  font-size: 18px;
-  color: #0ff;
+  font-size: 16px;
+  z-index: 20;
 }
 
-.btn {
-  margin-left: 10px;
-  padding: 5px 10px;
-  background: #111;
-  color: #0ff;
-  border: 1px solid #0ff;
+#paramPanel {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  z-index: 20;
+}
+
+#paramPanel button,
+#pauseBtn,
+#replayBtn,
+#closeLeaderboardBtn,
+#leaderboardBtn,
+#resumeBtn {
+  padding: 6px 12px;
+  font-size: 13px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(90deg,#00f0ff,#38f9d7);
+  color: #000;
   cursor: pointer;
-  transition: 0.2s;
-}
-.btn:hover {
-  background: #0ff;
-  color: #111;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,255,255,0.2);
+  min-width: 100px;
 }
 
-/* Overlay Classement */
-.overlay {
+#pauseBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+}
+
+#leaderboardBtn {
+  position: absolute;
+  top: 10px;
+  right: 120px;
+  z-index: 20;
+}
+
+#pauseOverlay,
+#victoryOverlay,
+#leaderboardDiv {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.9);
-  display: flex;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  color: #0ff;
+  font-size: 32px;
+  display: none;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
 }
-.leaderboard {
-  background: #111;
-  padding: 20px;
-  border: 2px solid #0ff;
-  border-radius: 10px;
-  width: 300px;
+
+#statsPanel {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255,255,255,0.05);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  display: none;
+  z-index: 20;
+}
+
+#fireworksCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+#rankingBoard {
+  margin-top: 20px;
+  font-size: 16px;
+}
+
+#myRank {
+  margin-top: 16px;
+  font-size: 14px;
   color: #0ff;
 }
-.hidden { display: none; }
 
-/* Page d'accueil */
-.menu-screen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
-.menu-container {
-  background: rgba(0,0,0,0.8);
-  padding: 30px;
-  border: 2px solid #0ff;
-  border-radius: 15px;
-  text-align: center;
-}
-.auth-card {
-  margin-top: 20px;
-}
-.auth-card input {
-  display: block;
-  margin: 10px auto;
-  padding: 8px;
-  width: 80%;
-  border: none;
-  border-radius: 5px;
-}
-.auth-card button {
-  padding: 10px 20px;
-  border: none;
-  background: #0ff;
-  color: #111;
-  cursor: pointer;
-}
-.title {
-  font-size: 2em;
-  margin-bottom: 20px;
+
+@media (max-width: 600px) {
+  #paramPanel {
+    flex-direction: column;
+    bottom: 10px;
+    gap: 6px;
+  }
+
+  #paramPanel button {
+    font-size: 12px;
+    padding: 5px 10px;
+    min-width: 90px;
+  }
+
+  #hud {
+    font-size: 14px;
+  }
+
+  #rankingBoard {
+    font-size: 14px;
+  }
 }
