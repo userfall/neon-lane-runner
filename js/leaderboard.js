@@ -10,10 +10,9 @@ import {
   limit
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// 🔐 Nettoyage du pseudo pour Firestore
+// 🔐 Nettoyage du pseudo
 function sanitizeKey(s) {
-  if (!s) return "anon";
-  return String(s).replace(/[.#$\[\]\/]/g, "_");
+  return String(s || "anon").replace(/[.#$\[\]\/]/g, "_");
 }
 
 // 🏆 Enregistrer le score
@@ -21,18 +20,16 @@ export async function saveScore(score) {
   const user = auth.currentUser;
   if (!user) return;
 
-  const pseudo = user.displayName || user.email.split('@')[0];
+  const pseudo = user.displayName || user.email?.split('@')[0] || "anon";
   const key = sanitizeKey(pseudo);
-  const safeScore = Number(score) || 0;
-
   const ref = doc(db, "leaderboard", key);
   const snap = await getDoc(ref);
   const existing = snap.exists() ? snap.data() : null;
 
-  if (!existing || safeScore > (existing.score || 0)) {
+  if (!existing || score > (existing.score || 0)) {
     await setDoc(ref, {
       pseudo,
-      score: safeScore,
+      score: Number(score),
       timestamp: Date.now()
     });
   }
@@ -53,11 +50,7 @@ export async function loadLeaderboard() {
     snapshot.forEach(doc => {
       const val = doc.data();
       if (val?.pseudo && val?.score != null) {
-        entries.push({
-          pseudo: val.pseudo,
-          score: Number(val.score),
-          timestamp: val.timestamp || 0
-        });
+        entries.push(val);
       }
     });
 
@@ -84,7 +77,7 @@ export async function loadLeaderboard() {
   }
 }
 
-// 🧠 Fermer le panneau classement
+// 🧠 Fermeture du panneau
 export function setupLeaderboardClose() {
   const closeBtn = document.getElementById("closeLeaderboardBtn");
   const overlay = document.getElementById("leaderboardDiv");
