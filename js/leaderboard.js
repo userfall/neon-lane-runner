@@ -1,5 +1,4 @@
 import { auth, db } from './firebase-config.js';
-import { isMobile, sanitizeKey } from './utils.js';
 import {
   collection,
   doc,
@@ -11,10 +10,16 @@ import {
   limit
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// 🏆 Enregistrer le score dans Firestore
+// 🔐 Nettoyage du pseudo pour Firestore
+function sanitizeKey(s) {
+  if (!s) return "anon";
+  return String(s).replace(/[.#$\[\]\/]/g, "_");
+}
+
+// 🏆 Enregistrer le score
 export async function saveScore(score) {
   const user = auth.currentUser;
-  if (!user || !isMobile()) return;
+  if (!user) return;
 
   const pseudo = user.displayName || user.email.split('@')[0];
   const key = sanitizeKey(pseudo);
@@ -22,26 +27,22 @@ export async function saveScore(score) {
 
   const ref = doc(db, "leaderboard", key);
   const snap = await getDoc(ref);
-
   const existing = snap.exists() ? snap.data() : null;
-  if (!existing || safeScore > (Number(existing.score) || 0)) {
+
+  if (!existing || safeScore > (existing.score || 0)) {
     await setDoc(ref, {
       pseudo,
       score: safeScore,
       timestamp: Date.now()
-    }).catch(e => console.warn("Erreur saveScore", e));
+    });
   }
 }
 
-// 📊 Charger et afficher le classement
+// 📊 Charger le classement
 export async function loadLeaderboard() {
   const boardEl = document.getElementById("rankingBoard");
   const myRankEl = document.getElementById("myRank");
-
-  if (!boardEl || !myRankEl) return;
-
   boardEl.innerHTML = "Chargement...";
-  myRankEl.innerHTML = "";
 
   try {
     const ref = collection(db, "leaderboard");
@@ -51,26 +52,23 @@ export async function loadLeaderboard() {
     const entries = [];
     snapshot.forEach(doc => {
       const val = doc.data();
-      if (val && val.pseudo && val.score != null) {
+      if (val?.pseudo && val?.score != null) {
         entries.push({
           pseudo: val.pseudo,
-          score: Number(val.score) || 0,
+          score: Number(val.score),
           timestamp: val.timestamp || 0
         });
       }
     });
 
-    entries.sort((a, b) => b.score - a.score || b.timestamp - a.timestamp);
     let html = "<ol>";
     const current = auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0];
-
     entries.forEach((e, i) => {
-      const isCurrent = current && sanitizeKey(current) === sanitizeKey(e.pseudo);
+      const isCurrent = sanitizeKey(e.pseudo) === sanitizeKey(current);
       html += `<li${isCurrent ? ' style="color:#0f0;font-weight:bold;"' : ''}>
         <b>#${i + 1}</b> ${e.pseudo} — <b>${e.score}</b> pts
       </li>`;
     });
-
     html += "</ol>";
     boardEl.innerHTML = html;
 
@@ -82,7 +80,7 @@ export async function loadLeaderboard() {
     }
   } catch (err) {
     boardEl.innerHTML = `<span style="color:red">Erreur chargement classement</span>`;
-    console.error("fetchLeaderboard err", err);
+    console.error("Erreur leaderboard:", err);
   }
 }
 
@@ -96,8 +94,3 @@ export function setupLeaderboardClose() {
     });
   }
 }
-
-// ✅ Activer au démarrage
-window.addEventListener("DOMContentLoaded", () => {
-  setupLeaderboardClose();
-});
