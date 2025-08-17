@@ -1,3 +1,4 @@
+/* 🌌 Fond et typographie */
 body, html {
   margin: 0;
   padding: 0;
@@ -8,6 +9,7 @@ body, html {
   font-size: 14px;
 }
 
+/* 🎮 Canvas principal */
 #gameCanvas {
   display: block;
   margin: auto;
@@ -19,6 +21,7 @@ body, html {
   touch-action: none;
 }
 
+/* 🧠 HUD */
 #hud {
   position: absolute;
   top: 10px;
@@ -27,6 +30,7 @@ body, html {
   z-index: 20;
 }
 
+/* ⚙️ Panneau de paramètres */
 #paramPanel {
   position: absolute;
   bottom: 20px;
@@ -38,6 +42,7 @@ body, html {
   z-index: 20;
 }
 
+/* 🕹️ Boutons */
 #paramPanel button,
 #pauseBtn,
 #replayBtn,
@@ -54,8 +59,14 @@ body, html {
   font-weight: bold;
   box-shadow: 0 4px 12px rgba(0,255,255,0.2);
   min-width: 100px;
+  transition: transform 0.2s ease;
 }
 
+button:hover {
+  transform: scale(1.05);
+}
+
+/* ⏸ Bouton pause */
 #pauseBtn {
   position: absolute;
   top: 10px;
@@ -63,6 +74,7 @@ body, html {
   z-index: 20;
 }
 
+/* 🏆 Bouton classement */
 #leaderboardBtn {
   position: absolute;
   top: 10px;
@@ -70,12 +82,14 @@ body, html {
   z-index: 20;
 }
 
+/* 🛑 Overlays */
 #pauseOverlay,
 #victoryOverlay,
-#leaderboardDiv {
+#leaderboardDiv,
+#congratsOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.85);
   color: #0ff;
   font-size: 32px;
   display: none;
@@ -86,6 +100,7 @@ body, html {
   animation: fadeIn 0.3s ease-out;
 }
 
+/* 📊 Panneau de stats */
 #statsPanel {
   position: absolute;
   bottom: 20px;
@@ -98,6 +113,7 @@ body, html {
   z-index: 20;
 }
 
+/* 🎆 Canvas feu d’artifice */
 #fireworksCanvas {
   position: absolute;
   top: 0;
@@ -107,6 +123,7 @@ body, html {
   pointer-events: none;
 }
 
+/* 🏆 Classement */
 #rankingBoard {
   margin-top: 20px;
   font-size: 16px;
@@ -118,16 +135,43 @@ body, html {
   color: #0ff;
 }
 
+/* 🎉 Message animé */
+.message-overlay {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #111;
+  color: #ff0;
+  font-size: 32px;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px #ff0;
+  z-index: 1000;
+  animation: pulse 1s infinite;
+  text-align: center;
+}
+
+/* 🌀 Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* 📱 Responsive mobile */
 @media (max-width: 600px) {
   #paramPanel {
     flex-direction: column;
     bottom: 10px;
     gap: 6px;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   #paramPanel button {
