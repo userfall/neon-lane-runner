@@ -1,36 +1,36 @@
-import { auth } from './firebase-config.js';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+import { auth } from "./firebase-config.js";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-export async function loginUser() {
-    const name = document.getElementById('loginName').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    if (!name || !password) throw new Error("Veuillez remplir tous les champs.");
+const loginBtn = document.getElementById("loginBtn");
+const registerBtn = document.getElementById("registerBtn");
+const messageEl = document.getElementById("authMessage");
 
-    // On utilise le pseudo comme email factice pour Firebase
-    const email = `${name}@neon.com`;
+loginBtn.addEventListener("click", async () => {
+  const email = document.getElementById("loginEmail").value;
+  const pass = document.getElementById("loginPassword").value;
 
-    try {
-        const userCred = await signInWithEmailAndPassword(auth, email, password);
-        return userCred.user;
-    } catch (err) {
-        if(err.code === 'auth/user-not-found') throw new Error("Pseudo introuvable.");
-        if(err.code === 'auth/wrong-password') throw new Error("Mot de passe incorrect.");
-        throw new Error("Erreur lors de la connexion.");
-    }
-}
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    window.location.href = "game.html";
+  } catch (err) {
+    messageEl.innerText = "Erreur connexion : " + err.message;
+  }
+});
 
-export async function signupUser() {
-    const name = document.getElementById('signupName').value.trim();
-    const password = document.getElementById('signupPassword').value.trim();
-    if (!name || !password) throw new Error("Veuillez remplir tous les champs.");
+registerBtn.addEventListener("click", async () => {
+  const email = document.getElementById("registerEmail").value;
+  const pass = document.getElementById("registerPassword").value;
+  const pseudo = document.getElementById("registerPseudo").value;
 
-    const email = `${name}@neon.com`; // Email factice pour Firebase
-
-    try {
-        const userCred = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCred.user, { displayName: name });
-    } catch (err) {
-        if(err.code === 'auth/email-already-in-use') throw new Error("Pseudo déjà utilisé.");
-        throw new Error("Erreur lors de l'inscription.");
-    }
-}
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(userCred.user, { displayName: pseudo });
+    messageEl.innerText = "Compte créé ! Vous pouvez jouer 🚀";
+  } catch (err) {
+    messageEl.innerText = "Erreur inscription : " + err.message;
+  }
+});
