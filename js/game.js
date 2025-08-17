@@ -2,14 +2,17 @@ import { gameSettings, loadSettings } from './settings.js';
 import { saveScore } from './leaderboard.js';
 import { isMobile } from './utils.js';
 
+// 🎮 Canvas
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 resizeCanvas();
 
+// 📸 Fond
 const backgroundImg = new Image();
 backgroundImg.src = './assets/images/background.png';
 let bgY = 0;
 
+// 🎵 Sons
 const sounds = {
   hit: new Audio('./assets/sounds/hit.wav'),
   music: new Audio('./assets/sounds/music.mp3'),
@@ -19,6 +22,7 @@ const sounds = {
 sounds.music.loop = true;
 sounds.music.volume = 0.5;
 
+// 🧠 Éléments DOM
 const scoreEl = document.getElementById('score');
 const livesEl = document.getElementById('lives');
 const startBtn = document.getElementById('startBtn');
@@ -35,6 +39,7 @@ const pauseOverlay = document.getElementById('pauseOverlay');
 const resumeBtn = document.getElementById('resumeBtn');
 const loader = document.getElementById('loader');
 
+// 🧩 Variables de jeu
 let player, obstacles, boss;
 let score = 0, lives = 3, level = 1;
 let keys = {};
@@ -42,9 +47,11 @@ let gameStarted = false;
 let fireworksLaunched = false;
 let gamePaused = false;
 
+// 🎮 Contrôles clavier
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
+// 📱 Contrôles tactiles
 canvas.addEventListener('touchstart', e => {
   const touchX = e.touches[0].clientX;
   const middle = canvas.width / 2;
@@ -55,6 +62,7 @@ canvas.addEventListener('touchend', () => {
   keys['ArrowRight'] = false;
 });
 
+// 🎮 Boutons HUD
 startBtn.addEventListener('click', () => startGame());
 musicToggle.addEventListener('click', toggleMusic);
 fxToggle.addEventListener('click', toggleFX);
@@ -73,6 +81,7 @@ resumeBtn.addEventListener('click', () => {
   requestAnimationFrame(gameLoop);
 });
 
+// ⏳ Chargement initial
 window.addEventListener('load', async () => {
   try {
     await loadSettings();
@@ -82,7 +91,7 @@ window.addEventListener('load', async () => {
   } catch (e) {
     console.warn("Erreur chargement settings", e);
   } finally {
-    loader.style.display = "none";
+    if (loader) loader.style.display = "none";
   }
 });
 window.addEventListener('resize', resizeCanvas);
@@ -92,6 +101,7 @@ function resizeCanvas() {
   canvas.height = window.innerHeight;
 }
 
+// 🚀 Démarrer le jeu
 export function startGame(pseudo = "anon") {
   gameStarted = true;
   score = 0;
@@ -120,6 +130,7 @@ export function startGame(pseudo = "anon") {
   animateCountdown(3, () => requestAnimationFrame(gameLoop));
 }
 
+// ⏳ Compte à rebours
 function animateCountdown(num, callback) {
   const overlay = document.createElement('div');
   overlay.style.cssText = `
@@ -141,6 +152,7 @@ function animateCountdown(num, callback) {
   }, 1000);
 }
 
+// 🎮 Boucle de jeu
 function gameLoop() {
   if (!gameStarted || gamePaused) return;
 
@@ -188,6 +200,7 @@ function gameLoop() {
   else requestAnimationFrame(gameLoop);
 }
 
+// 🆙 Niveau
 function updateLevel() {
   if (score % 600 === 0 && score !== 0) {
     level++;
@@ -211,6 +224,7 @@ function showLevelUp(level) {
   setTimeout(() => overlay.remove(), 1500);
 }
 
+// 🧨 Fin du jeu
 function endGame() {
   gameStarted = false;
   paramPanel.style.display = 'flex';
@@ -221,7 +235,7 @@ function endGame() {
 
   alert("Game Over ! Score: " + score);
 
-  if (score >= 2000 && !fireworksLaunched) {
+    if (score >= 2000 && !fireworksLaunched) {
     fireworksLaunched = true;
     victoryOverlay.style.display = 'flex';
     launchFireworks();
@@ -236,10 +250,13 @@ function endGame() {
   drawBackground();
 }
 
+// 🎨 Fond défilant
 function drawBackground() {
   ctx.drawImage(backgroundImg, 0, bgY - canvas.height, canvas.width, canvas.height);
   ctx.drawImage(backgroundImg, 0, bgY, canvas.width, canvas.height);
 }
+
+// 👾 Boss IA
 function moveBoss() {
   const bossSpeed = 0.8 + Math.floor(score / 600) * 0.2;
   if (player.x < boss.x - 10) boss.x -= bossSpeed;
@@ -349,6 +366,14 @@ function toggleFX() {
   fxToggle.textContent = gameSettings.fxOn ? "FX ON" : "FX OFF";
 }
 
+// ⏸ Pause
+function togglePause() {
+  gamePaused = !gamePaused;
+  pauseOverlay.style.display = gamePaused ? "flex" : "none";
+  pauseBtn.textContent = gamePaused ? "Reprendre" : "Pause";
+  if (!gamePaused && gameStarted) requestAnimationFrame(gameLoop);
+}
+
 // 📊 Affichage stats
 function updateStatsDisplay() {
   document.getElementById("gamesPlayed").textContent = localStorage.getItem("gamesPlayed") || 0;
@@ -364,4 +389,3 @@ style.innerHTML = `
   100% { transform: scale(1); }
 }`;
 document.head.appendChild(style);
-
