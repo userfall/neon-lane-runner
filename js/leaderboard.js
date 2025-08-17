@@ -5,7 +5,7 @@
 
 import { auth, db } from './firebase-config.js';
 import {
-  ref, set, get, child, onValue
+  ref, set, get
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
 // 🔹 Sauvegarde du score
