@@ -1,11 +1,14 @@
-// js/firebase-config.js
+// ==========================
+// FIREBASE CONFIGURATION
+// By Kabir
+// ==========================
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// ==========================
-// CONFIG FIREBASE
-// ==========================
+// 🔹 Configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDsoPkvefltYiKhHdlrGpd4GXbr8CEorcE",
   authDomain: "kabir123-3b13b.firebaseapp.com",
@@ -17,10 +20,13 @@ const firebaseConfig = {
   measurementId: "G-V14E5S3QXC"
 };
 
-// 🔹 Initialisation Firebase
+// 🔹 Initialisation
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+
+// 🔹 Services
+const auth = getAuth(app);               // 🔐 Authentification
+const db = getDatabase(app);            // 📦 Realtime Database
+const firestore = getFirestore(app);    // 🔥 Firestore
 
 // 🔹 Exports
-export { auth, db };
+export { auth, db, firestore };
