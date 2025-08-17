@@ -11,10 +11,6 @@ import {
   limit
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-function sanitizeKey(s) {
-  if (!s) return "anon";
-  return String(s).replace(/[.#$\[\]\/]/g, "_");
-}
 
 export async function saveScore(score) {
   const user = auth.currentUser;
