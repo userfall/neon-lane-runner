@@ -6,7 +6,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
 // 🔹 Configuration Firebase
 const firebaseConfig = {
@@ -26,7 +25,6 @@ const app = initializeApp(firebaseConfig);
 // 🔹 Services
 const auth = getAuth(app);               // 🔐 Authentification
 const db = getDatabase(app);            // 📦 Realtime Database
-const firestore = getFirestore(app);    // 🔥 Firestore
 
 // 🔹 Exports
-export { auth, db, firestore };
+export { auth, db };
