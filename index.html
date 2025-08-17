@@ -2,60 +2,56 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Connexion - Neon Lane Runner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - Neon Lane Runner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #111, #222, #000);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+    /* ======== RESET & BASE ======== */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Orbitron', sans-serif; }
+    body, html { height: 100%; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg,#0f0c29,#302b63,#24243e); color: #fff; }
+
+    /* ======== CONTAINER ======== */
     .container {
-      background: rgba(0,0,0,0.8);
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,255,255,0.5);
-      width: 350px;
+      background: rgba(0,0,0,0.85);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 0 25px rgba(0,255,255,0.6);
+      width: 380px;
       text-align: center;
+      position: relative;
     }
-    h2 {
-      margin-bottom: 20px;
-      color: #0ff;
-    }
+
+    h1, h2 { color: #0ff; margin-bottom: 20px; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 22px; }
+
     input {
       width: 100%;
-      padding: 12px;
-      margin: 8px 0;
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 10px;
       border: none;
-      border-radius: 8px;
       outline: none;
-      background: #333;
-      color: white;
+      background: #1a1a1a;
+      color: #0ff;
+      font-size: 16px;
     }
+
     button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       margin-top: 12px;
-      background: #0ff;
+      background: #00f0ff;
       color: #000;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
-      transition: 0.3s;
+      transition: all 0.3s;
     }
-    button:hover {
-      background: #00cccc;
-    }
-    p {
-      margin-top: 15px;
-      font-size: 14px;
-    }
+
+    button:hover { background: #00cccc; }
+
     .link-btn {
       background: none;
       border: none;
@@ -63,81 +59,118 @@
       font-size: 14px;
       cursor: pointer;
       text-decoration: underline;
-      margin-top: 5px;
+      margin-top: 8px;
     }
-    .hidden {
-      display: none;
+
+    .hidden { display: none; }
+
+    /* ======== FOOTER ======== */
+    .footer { margin-top: 15px; font-size: 12px; color: #0ff; text-align: center; }
+    .footer a { color: #0ff; text-decoration: none; font-weight: bold; }
+
+    /* ======== ALERT MESSAGE ======== */
+    #authMessage {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #ff0;
+      min-height: 18px;
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <h1>Neon Lane Runner</h1>
+
     <!-- Connexion -->
     <div id="loginForm">
       <h2>Connexion</h2>
-      <input type="text" id="loginUser" placeholder="Nom d'utilisateur" required>
-      <input type="password" id="loginPass" placeholder="Mot de passe" required>
-      <button type="button" onclick="login()">Se connecter</button>
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPassword" placeholder="Mot de passe" required>
+      <button id="loginBtn">Se connecter</button>
       <p>Pas encore de compte ? 
         <button type="button" class="link-btn" onclick="showRegister()">Inscription</button>
       </p>
+      <div id="authMessage"></div>
     </div>
 
     <!-- Inscription -->
     <div id="registerForm" class="hidden">
       <h2>Inscription</h2>
-      <input type="text" id="regUser" placeholder="Nom d'utilisateur" required>
-      <input type="password" id="regPass" placeholder="Mot de passe" required>
-      <button type="button" onclick="register()">S'inscrire</button>
+      <input type="text" id="registerPseudo" placeholder="Pseudo" required>
+      <input type="email" id="registerEmail" placeholder="Email" required>
+      <input type="password" id="registerPassword" placeholder="Mot de passe" required>
+      <button id="registerBtn">S'inscrire</button>
       <p>Déjà un compte ? 
         <button type="button" class="link-btn" onclick="showLogin()">Connexion</button>
       </p>
+      <div id="authMessage"></div>
+    </div>
+
+    <div class="footer">
+      by Kabir | <a href="#">Neon Corp.</a>
     </div>
   </div>
 
-  <script>
+  <!-- ======== SCRIPT ======== -->
+  <script type="module">
+    import { auth } from "./js/firebase-config.js";
+    import {
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      updateProfile,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    const loginBtn = document.getElementById("loginBtn");
+    const registerBtn = document.getElementById("registerBtn");
+    const messageEl = document.getElementById("authMessage");
+
     function showRegister() {
       document.getElementById("loginForm").classList.add("hidden");
       document.getElementById("registerForm").classList.remove("hidden");
+      messageEl.textContent = "";
     }
 
     function showLogin() {
       document.getElementById("registerForm").classList.add("hidden");
       document.getElementById("loginForm").classList.remove("hidden");
+      messageEl.textContent = "";
     }
 
-    function register() {
-      let user = document.getElementById("regUser").value.trim();
-      let pass = document.getElementById("regPass").value.trim();
+    // 🔹 Connexion
+    loginBtn.addEventListener("click", async () => {
+      const email = document.getElementById("loginEmail").value;
+      const pass = document.getElementById("loginPassword").value;
 
-      if (!user || !pass) {
-        alert("Remplis tous les champs !");
-        return;
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        messageEl.textContent = "Connexion réussie ! Redirection...";
+        setTimeout(() => window.location.href = "game.html", 500);
+      } catch (err) {
+        messageEl.textContent = "Erreur connexion : " + err.message;
       }
+    });
 
-      if (localStorage.getItem("user_" + user)) {
-        alert("Ce nom d'utilisateur existe déjà !");
-        return;
+    // 🔹 Inscription
+    registerBtn.addEventListener("click", async () => {
+      const email = document.getElementById("registerEmail").value;
+      const pass = document.getElementById("registerPassword").value;
+      const pseudo = document.getElementById("registerPseudo").value || "Joueur";
+
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateProfile(userCred.user, { displayName: pseudo });
+        messageEl.textContent = "Compte créé ! Vous pouvez jouer 🚀";
+        showLogin();
+      } catch (err) {
+        messageEl.textContent = "Erreur inscription : " + err.message;
       }
+    });
 
-      localStorage.setItem("user_" + user, pass);
-      alert("Inscription réussie ✅ ! Connecte-toi.");
-      showLogin();
-    }
-
-    function login() {
-      let user = document.getElementById("loginUser").value.trim();
-      let pass = document.getElementById("loginPass").value.trim();
-
-      let savedPass = localStorage.getItem("user_" + user);
-
-      if (savedPass && savedPass === pass) {
-        localStorage.setItem("currentUser", user);
-        window.location.href = "game.html"; // Redirection vers le jeu
-      } else {
-        alert("Identifiants incorrects ❌");
-      }
-    }
+    // 🔹 Vérification état de connexion
+    onAuthStateChanged(auth, (user) => {
+      if (user) console.log("Utilisateur connecté :", user.displayName);
+    });
   </script>
 </body>
 </html>
