@@ -3,9 +3,9 @@
 // By Kabir - Neon Games Corporation
 // ========================
 
-import { gameSettings, loadSettings } from './settings.js';
+import { gameSettings } from './settings.js';
 import { saveScore, loadLeaderboard, setupLeaderboardClose } from './leaderboard.js';
-import { auth, db } from './firebase-config.js';
+import { auth } from './firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
 // 🎮 CANVAS
@@ -36,9 +36,7 @@ const backgroundImg = new Image();
 backgroundImg.src = './assets/images/background.png';
 let bgY = 0;
 
-// 🧠 HUD & DOM
-const scoreEl = document.getElementById('score');
-const livesEl = document.getElementById('lives');
+// 🧠 DOM
 const startBtn = document.getElementById('startBtn');
 const musicToggle = document.getElementById('musicToggle');
 const fxToggle = document.getElementById('fxToggle');
@@ -52,8 +50,9 @@ const pauseBtn = document.getElementById('pauseBtn');
 const pauseOverlay = document.getElementById('pauseOverlay');
 const resumeBtn = document.getElementById('resumeBtn');
 const leaderboardBtn = document.getElementById('leaderboardBtn');
+const rankingBoard = document.getElementById('rankingBoard');
 
-// 🧩 Variables
+// Variables
 let player, obstacles, boss;
 let score = 0, lives = gameSettings.lives || 3, level = 1;
 let keys = {};
@@ -61,7 +60,7 @@ let gameStarted = false;
 let fireworksLaunched = false;
 let gamePaused = false;
 
-// 🔹 Auth check
+// Auth check
 onAuthStateChanged(auth, user => {
     if (!user) {
         alert("Vous devez être connecté pour jouer !");
@@ -69,23 +68,20 @@ onAuthStateChanged(auth, user => {
     }
 });
 
-// 🔹 Contrôles clavier
+// Contrôles clavier et tactile
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
-
-// 🔹 Contrôles tactiles
 canvas.addEventListener('touchstart', e => {
     if (!e.touches.length) return;
     const touchX = e.touches[0].clientX;
-    const middle = canvas.width / 2;
-    keys[touchX < middle ? 'ArrowLeft' : 'ArrowRight'] = true;
+    keys[touchX < canvas.width / 2 ? 'ArrowLeft' : 'ArrowRight'] = true;
 });
 canvas.addEventListener('touchend', () => {
     keys['ArrowLeft'] = false;
     keys['ArrowRight'] = false;
 });
 
-// 🔹 Boutons
+// Boutons
 startBtn.addEventListener('click', startGame);
 musicToggle.addEventListener('click', () => {
     gameSettings.musicOn = !gameSettings.musicOn;
@@ -97,24 +93,14 @@ fxToggle.addEventListener('click', () => {
     fxToggle.textContent = gameSettings.fxOn ? "FX ON" : "FX OFF";
 });
 statsBtn.addEventListener('click', () => {
-    statsPanel.style.display = statsPanel.style.display === "none" ? "block" : "none";
+    statsPanel.style.display = 'flex';
 });
 replayBtn.addEventListener('click', () => {
     victoryOverlay.style.display = 'none';
     startGame();
 });
-pauseBtn.addEventListener('click', () => {
-    gamePaused = !gamePaused;
-    pauseBtn.textContent = gamePaused ? "Reprendre" : "Pause";
-    pauseOverlay.style.display = gamePaused ? "flex" : "none";
-    if (!gamePaused && gameStarted) requestAnimationFrame(gameLoop);
-});
-resumeBtn.addEventListener('click', () => {
-    gamePaused = false;
-    pauseOverlay.style.display = "none";
-    pauseBtn.textContent = "Pause";
-    requestAnimationFrame(gameLoop);
-});
+pauseBtn.addEventListener('click', togglePause);
+resumeBtn.addEventListener('click', resumeGame);
 leaderboardBtn.addEventListener('click', () => {
     document.getElementById("leaderboardDiv").style.display = "block";
     loadLeaderboard();
@@ -137,7 +123,10 @@ function startGame() {
     player = { x: canvas.width / 2 - 25, y: canvas.height - 100, width: 50, height: 50 };
     boss = { x: Math.random() * canvas.width, y: -100, width: 40, height: 40 };
     bgY = 0;
+
+    // Tout menu disparaît
     paramPanel.style.display = 'none';
+    leaderboardBtn.style.display = 'none';
     pauseBtn.style.display = 'block';
     pauseOverlay.style.display = 'none';
 
@@ -148,7 +137,6 @@ function startGame() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
-    updateLocalStats();
     animateCountdown(3, () => requestAnimationFrame(gameLoop));
 }
 
@@ -158,54 +146,45 @@ function startGame() {
 function gameLoop() {
     if (!gameStarted || gamePaused) return;
 
-    // Background
     bgY += gameSettings.gameSpeed / 2;
     if (bgY >= canvas.height) bgY = 0;
     drawBackground();
 
-    // Player movement
     if (keys['ArrowLeft'] && player.x > 0) player.x -= gameSettings.gameSpeed;
     if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += gameSettings.gameSpeed;
 
-    // Draw player
     ctx.fillStyle = "#0ff";
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
     moveBoss();
 
-    // Obstacles
     if (Math.random() * 100 < gameSettings.spawnRate / 20) {
         obstacles.push({ x: Math.random() * (canvas.width - 30), y: -30, width: 30, height: 30 });
     }
-
     obstacles.forEach((o, i) => {
         o.y += gameSettings.gameSpeed;
         ctx.fillStyle = "#f00";
         ctx.fillRect(o.x, o.y, o.width, o.height);
-
-        if (
-            player.x < o.x + o.width &&
-            player.x + player.width > o.x &&
-            player.y < o.y + o.height &&
-            player.y + player.height > o.y
-        ) {
+        if (checkCollision(player, o)) {
             obstacles.splice(i, 1);
             lives--;
             if (gameSettings.fxOn) sounds.hit.play();
         }
-
         if (o.y > canvas.height) obstacles.splice(i, 1);
     });
 
-    // HUD
     score++;
-    scoreEl.textContent = "Score: " + score;
-    livesEl.textContent = "Vies: " + lives;
-
     updateLevel();
 
     if (lives <= 0) endGame();
     else requestAnimationFrame(gameLoop);
+}
+
+function checkCollision(a, b) {
+    return a.x < b.x + b.width &&
+           a.x + a.width > b.x &&
+           a.y < b.y + b.height &&
+           a.y + a.height > b.y;
 }
 
 // ========================
@@ -213,58 +192,30 @@ function gameLoop() {
 // ========================
 function endGame() {
     gameStarted = false;
-    paramPanel.style.display = 'flex';
     pauseBtn.style.display = 'none';
     pauseOverlay.style.display = 'none';
+    victoryOverlay.style.display = score >= 2000 ? 'flex' : 'none';
     if (gameSettings.fxOn) sounds.gameover.play();
     if (gameSettings.musicOn) sounds.music.pause();
 
-    if (score >= 5000) showFireworksMessage();
-    if (score >= 2000 && !fireworksLaunched) {
-        fireworksLaunched = true;
-        victoryOverlay.style.display = 'flex';
-        launchFireworks();
-    }
+    launchFireworks();
 
-    updateLocalStats();
+    if (auth.currentUser) saveScore(score).catch(err => console.error(err));
 
-    // 🔹 Sauvegarde Firebase
-    if (auth.currentUser) {
-        saveScore(score).then(() => console.log("Score sauvegardé sur Firebase !"))
-            .catch(err => console.error(err));
-    }
-
-    gameSettings.gameSpeed = 2.5;
-    gameSettings.spawnRate = 25;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
 }
 
 // ========================
-// UPDATE LOCAL STATS
+// LEVEL
 // ========================
-function updateLocalStats() {
-    const stats = JSON.parse(localStorage.getItem('gameStats')) || {
-        highScore: 0,
-        totalPlays: 0,
-        lastScore: 0,
-        maxLevel: 0
-    };
-
-    stats.lastScore = score;
-    stats.highScore = Math.max(stats.highScore, score);
-    stats.totalPlays += 1;
-    stats.maxLevel = Math.max(stats.maxLevel, level);
-
-    localStorage.setItem('gameStats', JSON.stringify(stats));
-
-    if (statsPanel) {
-        statsPanel.innerHTML = `
-            <p>Score actuel: ${score}</p>
-            <p>Meilleur score: ${stats.highScore}</p>
-            <p>Niveau max atteint: ${stats.maxLevel}</p>
-            <p>Parties jouées: ${stats.totalPlays}</p>
-        `;
+function updateLevel() {
+    const newLevel = Math.floor(score / 1000) + 1;
+    if (newLevel > level) {
+        level = newLevel;
+        gameSettings.gameSpeed += 0.3;
+        gameSettings.spawnRate += 1;
+        if (gameSettings.fxOn) sounds.levelup.play();
     }
 }
 
@@ -281,35 +232,14 @@ function moveBoss() {
     if (player.x < boss.x - 10) boss.x -= bossSpeed;
     if (player.x > boss.x + 10) boss.x += bossSpeed;
     boss.y += 0.8;
-
     ctx.fillStyle = "#ff0";
     ctx.fillRect(boss.x, boss.y, boss.width, boss.height);
-
-    if (
-        player.x < boss.x + boss.width &&
-        player.x + player.width > boss.x &&
-        player.y < boss.y + boss.height &&
-        player.y + player.height > boss.y
-    ) {
+    if (checkCollision(player, boss)) {
         lives--;
         if (gameSettings.fxOn) sounds.hit.play();
         boss.y = -100;
     }
-
     if (boss.y > canvas.height) boss.y = -100;
-}
-
-// ========================
-// LEVEL / SCORE
-// ========================
-function updateLevel() {
-    const newLevel = Math.floor(score / 1000) + 1;
-    if (newLevel > level) {
-        level = newLevel;
-        gameSettings.gameSpeed += 0.3;
-        gameSettings.spawnRate += 1;
-        if (gameSettings.fxOn) sounds.levelup.play();
-    }
 }
 
 // ========================
@@ -319,7 +249,6 @@ function launchFireworks() {
     const ctxF = fireworksCanvas.getContext('2d');
     fireworksCanvas.width = window.innerWidth;
     fireworksCanvas.height = window.innerHeight;
-
     let particles = [];
     for (let i = 0; i < 100; i++) {
         particles.push({
@@ -328,12 +257,11 @@ function launchFireworks() {
             dx: (Math.random() - 0.5) * 6,
             dy: (Math.random() - 0.5) * 6,
             radius: Math.random() * 3 + 2,
-            color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+            color: `hsl(${Math.random() * 360},100%,50%)`,
             life: 100
         });
     }
-
-    function animateFireworks() {
+    function animate() {
         ctxF.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
         particles.forEach(p => {
             ctxF.beginPath();
@@ -345,58 +273,25 @@ function launchFireworks() {
             p.life--;
         });
         particles = particles.filter(p => p.life > 0);
-        if (particles.length > 0) requestAnimationFrame(animateFireworks);
+        if (particles.length > 0) requestAnimationFrame(animate);
     }
-
-    animateFireworks();
+    animate();
 }
 
-function showFireworksMessage() {
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-        position: fixed; inset:0; background: rgba(0,0,0,0.85);
-        display:flex; flex-direction: column; align-items:center; justify-content:center;
-        z-index:10000; animation: fadeIn 0.5s ease-out;
-    `;
-
-    const canvasMsg = document.createElement('canvas');
-    canvasMsg.width = window.innerWidth;
-    canvasMsg.height = window.innerHeight;
-    canvasMsg.style.position = "absolute"; canvasMsg.style.top = "0"; canvasMsg.style.left = "0";
-    overlay.appendChild(canvasMsg);
-
-    const msg = document.createElement('div');
-    msg.textContent = `🚀 Tu as explosé les 5000 points !`;
-    msg.style.cssText = `
-        color:#fff;font-size:36px;font-weight:bold;text-shadow:0 0 20px #0ff;
-        z-index:10001; animation:pulse 1s infinite; margin-top:20px;
-    `;
-    overlay.appendChild(msg);
-    document.body.appendChild(overlay);
-
-    const ctxMsg = canvasMsg.getContext("2d");
-    let particles = [];
-    for (let i = 0; i < 120; i++) particles.push({
-        x: canvasMsg.width/2, y: canvasMsg.height/2,
-        dx: (Math.random()-0.5)*8, dy: (Math.random()-0.5)*8,
-        radius: Math.random()*3+2,
-        color: `hsl(${Math.random()*360},100%,50%)`, life:100
-    });
-
-    function animateFireworks() {
-        ctxMsg.clearRect(0,0,canvasMsg.width,canvasMsg.height);
-        particles.forEach(p=>{
-            ctxMsg.beginPath();
-            ctxMsg.arc(p.x,p.y,p.radius,0,Math.PI*2);
-            ctxMsg.fillStyle=p.color;
-            ctxMsg.fill();
-            p.x+=p.dx; p.y+=p.dy; p.life--;
-        });
-        particles = particles.filter(p=>p.life>0);
-        if(particles.length>0) requestAnimationFrame(animateFireworks);
-    }
-    animateFireworks();
-    setTimeout(()=>overlay.remove(),4000);
+// ========================
+// PAUSE / RESUME
+// ========================
+function togglePause() {
+    gamePaused = !gamePaused;
+    pauseBtn.textContent = gamePaused ? "Reprendre" : "Pause";
+    pauseOverlay.style.display = gamePaused ? "flex" : "none";
+    if (!gamePaused) requestAnimationFrame(gameLoop);
+}
+function resumeGame() {
+    gamePaused = false;
+    pauseOverlay.style.display = "none";
+    pauseBtn.textContent = "Pause";
+    requestAnimationFrame(gameLoop);
 }
 
 // ========================
@@ -423,4 +318,23 @@ function animateCountdown(count, callback) {
             callback();
         }
     }, 1000);
+}
+
+// ========================
+// DISPLAY STATS (avec retour)
+// ========================
+function displayStats() {
+    gamePaused = true;
+    statsPanel.style.display = 'flex';
+    const stats = JSON.parse(localStorage.getItem('gameStats')) || {highScore:0, totalPlays:0};
+    statsPanel.innerHTML = `
+        <p>Meilleur score: ${stats.highScore}</p>
+        <p>Parties jouées: ${stats.totalPlays}</p>
+        <button id="closeStatsBtn">Retour au jeu</button>
+    `;
+    document.getElementById('closeStatsBtn').addEventListener('click', () => {
+        statsPanel.style.display = 'none';
+        gamePaused = false;
+        if (gameStarted) requestAnimationFrame(gameLoop);
+    });
 }
