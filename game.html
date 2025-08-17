@@ -6,8 +6,182 @@
   <title>Neon Lane Runner</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/game.css" />
-  <script type="module" src="js/settings.js"></script>
-  <script type="module" src="js/game.js"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: #0b0b0c;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      font-size: 20px;
+      color: #00f0ff;
+      text-shadow: 0 0 10px #00f0ff;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid #00f0ff;
+      border-top: 6px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    #gameCanvas {
+      display: block;
+      margin: auto;
+      background: linear-gradient(180deg,#0b0b0c,#121214);
+      border-radius: 14px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.7), 0 0 48px rgba(45,156,219,0.06) inset;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+    }
+
+    #hud {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 18px;
+      z-index: 20;
+    }
+
+    #paramPanel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    #paramPanel button,
+    #pauseBtn,
+    #replayBtn,
+    #closeLeaderboardBtn,
+    #leaderboardBtn,
+    #resumeBtn {
+      padding: 10px 16px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg,#00f0ff,#38f9d7);
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,255,255,0.2);
+    }
+
+    #pauseBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 20;
+    }
+
+    #pauseOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      color: #0ff;
+      font-size: 40px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    #statsPanel {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.05);
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+      z-index: 20;
+    }
+
+    #victoryOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      color: #fff;
+      font-size: 24px;
+      text-align: center;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    #fireworksCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+    }
+
+    #leaderboardDiv {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000d;
+      color: #fff;
+      z-index: 1000;
+      text-align: center;
+      padding-top: 60px;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    #rankingBoard {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    #myRank {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #0ff;
+    }
+
+    #replayBtn, #resumeBtn {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
   <!-- ⏳ Loader -->
@@ -30,6 +204,7 @@
     <button id="musicToggle">Musique ON</button>
     <button id="fxToggle">FX ON</button>
     <button id="statsBtn">Stats</button>
+    <button id="leaderboardBtn">Classement</button>
     <button id="startBtn">START</button>
   </div>
 
@@ -37,21 +212,36 @@
   <button id="pauseBtn" style="display:none;">Pause</button>
 
   <!-- 🛑 Panneau Pause -->
-  <div id="pauseOverlay" style="display:none;">
+  <div id="pauseOverlay">
     <p>⏸️ Jeu en pause</p>
+    <button id="resumeBtn">Reprendre</button>
   </div>
 
   <!-- 📊 Panneau de stats -->
-  <div id="statsPanel" style="display:none;">
+  <div id="statsPanel">
     Parties jouées : <span id="gamesPlayed">0</span><br>
     Meilleur score : <span id="bestScore">0</span>
   </div>
 
   <!-- 🎉 Panneau de victoire -->
-  <div id="victoryOverlay" style="display:none;">
+  <div id="victoryOverlay">
     <canvas id="fireworksCanvas"></canvas>
     <p>🎉 Bravo ! Tu as atteint un score incroyable !</p>
     <button id="replayBtn">Rejouer</button>
   </div>
+
+  <!-- 🏆 Classement -->
+  <div id="leaderboardDiv">
+    <h2 style="color:#00f0ff;">🏆 Classement</h2>
+    <div id="rankingBoard">Chargement...</div>
+    <div id="myRank"></div>
+    <button id="closeLeaderboardBtn">Fermer</button>
+  </div>
+
+  <!-- 📦 Scripts -->
+  <script type="module" src="js/settings.js"></script>
+  <script type="module" src="js/utils.js"></script>
+  <script type="module" src="js/leaderboard.js"></script>
+  <script type="module" src="js/game.js"></script>
 </body>
 </html>
