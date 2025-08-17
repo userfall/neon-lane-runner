@@ -1,19 +1,18 @@
+// ========================
+// NEON LANE RUNNER - GAME.JS
+// By Kabir - Neon Games Corporation
+// ========================
+
 import { gameSettings, loadSettings } from './settings.js';
 import { saveScore, loadLeaderboard, setupLeaderboardClose } from './leaderboard.js';
-import { auth } from './firebase-config.js';
-
-// 🔹 Favicon
-const link = document.createElement('link');
-link.rel = 'icon';
-link.type = 'image/x-icon';
-link.href = 'assets/images/favicon.ico';
-document.head.appendChild(link);
+import { auth, db } from './firebase-config.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
 // 🎮 CANVAS
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// --- resize canvas ---
+// --- Resize Canvas ---
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -38,7 +37,7 @@ const backgroundImg = new Image();
 backgroundImg.src = './assets/images/background.png';
 let bgY = 0;
 
-// 🧠 HUD
+// 🧠 HUD & DOM
 const scoreEl = document.getElementById('score');
 const livesEl = document.getElementById('lives');
 const startBtn = document.getElementById('startBtn');
@@ -63,11 +62,19 @@ let gameStarted = false;
 let fireworksLaunched = false;
 let gamePaused = false;
 
-// 🎮 Contrôles clavier
+// 🔹 Auth check
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    alert("Vous devez être connecté pour jouer !");
+    window.location.href = "index.html";
+  }
+});
+
+// 🔹 Contrôles clavier
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
 
-// 📱 Contrôles tactiles
+// 🔹 Contrôles tactiles
 canvas.addEventListener('touchstart', e => {
   if (!e.touches.length) return;
   const touchX = e.touches[0].clientX;
@@ -79,7 +86,7 @@ canvas.addEventListener('touchend', () => {
   keys['ArrowRight'] = false;
 });
 
-// 🟢 Événements boutons
+// 🔹 Boutons
 startBtn.addEventListener('click', startGame);
 musicToggle.addEventListener('click', () => {
   gameSettings.musicOn = !gameSettings.musicOn;
@@ -147,61 +154,27 @@ function startGame() {
 }
 
 // ========================
-// UPDATE STATS
-// ========================
-function updateLocalStats() {
-  let played = Number(localStorage.getItem("gamesPlayed")) || 0;
-  localStorage.setItem("gamesPlayed", played + 1);
-
-  let best = Number(localStorage.getItem("bestScore")) || 0;
-  if (score > best) {
-    localStorage.setItem("bestScore", score);
-    best = score;
-    showNewRecord(score);
-  }
-
-  document.getElementById("gamesPlayed").textContent = played + 1;
-  document.getElementById("bestScore").textContent = best;
-}
-
-// ========================
-// SHOW NEW RECORD
-// ========================
-function showNewRecord(score) {
-  if (!gameSettings.fxOn) return;
-  sounds.levelup.play();
-  const overlay = document.createElement('div');
-  overlay.textContent = `🏆 Nouveau record : ${score} pts !`;
-  overlay.style.cssText = `
-    position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);
-    background:#222;color:#ff0;font-size:32px;padding:20px 30px;border-radius:12px;
-    box-shadow:0 0 20px #ff0;z-index:1000;animation: pulse 1s infinite;
-  `;
-  document.body.appendChild(overlay);
-  setTimeout(() => overlay.remove(), 4000);
-}
-
-// ========================
 // GAME LOOP
 // ========================
 function gameLoop() {
   if (!gameStarted || gamePaused) return;
 
+  // Background
   bgY += gameSettings.gameSpeed / 2;
   if (bgY >= canvas.height) bgY = 0;
   drawBackground();
 
-  // Mouvement joueur
+  // Player movement
   if (keys['ArrowLeft'] && player.x > 0) player.x -= gameSettings.gameSpeed;
   if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += gameSettings.gameSpeed;
 
-  // Dessiner joueur
+  // Draw player
   ctx.fillStyle = "#0ff";
   ctx.fillRect(player.x, player.y, player.width, player.height);
 
   moveBoss();
 
-  // Spawn obstacles
+  // Obstacles
   if (Math.random() * 100 < gameSettings.spawnRate / 20) {
     obstacles.push({ x: Math.random() * (canvas.width - 30), y: -30, width: 30, height: 30 });
   }
@@ -225,7 +198,7 @@ function gameLoop() {
     if (o.y > canvas.height) obstacles.splice(i, 1);
   });
 
-  // Score & HUD
+  // HUD
   score++;
   scoreEl.textContent = "Score: " + score;
   livesEl.textContent = "Vies: " + lives;
@@ -234,30 +207,6 @@ function gameLoop() {
 
   if (lives <= 0) endGame();
   else requestAnimationFrame(gameLoop);
-}
-
-// ========================
-// UPDATE LEVEL
-// ========================
-function updateLevel() {
-  if (score % 600 === 0 && score !== 0) {
-    level++;
-    gameSettings.gameSpeed += 0.5;
-    gameSettings.spawnRate += 5;
-    if (gameSettings.fxOn) sounds.levelup.play();
-    showLevelUp(level);
-  }
-}
-
-function showLevelUp(level) {
-  const overlay = document.createElement('div');
-  overlay.textContent = "Niveau " + level;
-  overlay.style.cssText = `
-    position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);
-    color:#0f0;font-size:60px;z-index:1000;text-shadow:0 0 20px #0f0;
-  `;
-  document.body.appendChild(overlay);
-  setTimeout(() => overlay.remove(), 1500);
 }
 
 // ========================
@@ -280,14 +229,24 @@ function endGame() {
 
   updateLocalStats();
 
-  // 🔹 Sauvegarde automatique du score dans Firebase
-  if (auth.currentUser) saveScore(score);
+  // 🔹 Sauvegarde Firebase
+  if (auth.currentUser) {
+    saveScore(score).then(() => console.log("Score sauvegardé sur Firebase !"))
+    .catch(err => console.error(err));
+  }
 
   gameSettings.gameSpeed = 2.5;
   gameSettings.spawnRate = 25;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
 }
+
+// ========================
+// AUTRES FONCTIONS (HUD, LEVEL, BOSS, FIREWORKS...)
+// Garde ton code actuel pour :
+// drawBackground(), moveBoss(), launchFireworks(), showFireworksMessage(), updateLevel(), showLevelUp(), updateLocalStats()
+// ========================
+
 
 // ========================
 // BACKGROUND & BOSS
