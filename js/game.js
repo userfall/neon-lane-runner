@@ -5,6 +5,7 @@
 
 import { auth } from './firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+import { saveScore, loadLeaderboard, setupLeaderboardClose } from './leaderboard.js';
 
 // 🎮 Canvas
 const canvas = document.getElementById('gameCanvas');
@@ -23,6 +24,10 @@ const statsContent = document.getElementById('statsContent');
 const paramPanel = document.getElementById('paramPanel');
 const pauseBtn = document.getElementById('pauseBtn');
 const leaderboardBtn = document.getElementById('leaderboardBtn');
+const leaderboardDiv = document.getElementById('leaderboardDiv');
+const myRankDiv = document.createElement('div');
+myRankDiv.id = "myRank";
+leaderboardDiv.appendChild(myRankDiv);
 
 // 🎵 Sounds
 const sounds = {
@@ -38,6 +43,7 @@ sounds.music.volume = 0.5;
 const backgroundImg = new Image();
 backgroundImg.src = './assets/images/background.png';
 let bgY = 0;
+let menuMode = true;
 
 // 🔹 Game Variables
 let player, obstacles, boss;
@@ -96,13 +102,19 @@ statsBtn.addEventListener('click', showStats);
 closeStatsBtn.addEventListener('click', hideStats);
 pauseBtn.addEventListener('click', togglePause);
 startBtn.addEventListener('click', () => animateCountdown(3, startGame));
+leaderboardBtn.addEventListener('click', () => {
+  leaderboardDiv.style.display = "flex";
+  loadLeaderboard();
+});
+setupLeaderboardClose();
 
-// 🧠 Menu Background Animation
+// 🧠 Menu Background (fixe)
+function drawMenuBackground() {
+  ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+}
 function animateMenuBackground() {
   if (gameStarted) return;
-  bgY += 0.5;
-  if (bgY >= canvas.height) bgY = 0;
-  drawBackground();
+  drawMenuBackground();
   requestAnimationFrame(animateMenuBackground);
 }
 animateMenuBackground();
@@ -110,6 +122,7 @@ animateMenuBackground();
 // 🚀 Start Game
 function startGame() {
   gameStarted = true;
+  menuMode = false;
   score = 0;
   lives = gameSettings.lives;
   level = 1;
@@ -135,7 +148,7 @@ function gameLoop() {
 
   bgY += gameSettings.gameSpeed / 2;
   if (bgY >= canvas.height) bgY = 0;
-  drawBackground();
+  drawGameBackground();
 
   if (keys['ArrowLeft'] && player.x > 0) player.x -= gameSettings.gameSpeed;
   if (keys['ArrowRight'] && player.x + player.width < canvas.width) player.x += gameSettings.gameSpeed;
@@ -177,7 +190,7 @@ function gameLoop() {
 }
 
 // 🎨 Background
-function drawBackground() {
+function drawGameBackground() {
   ctx.drawImage(backgroundImg, 0, bgY - canvas.height, canvas.width, canvas.height);
   ctx.drawImage(backgroundImg, 0, bgY, canvas.width, canvas.height);
 }
@@ -225,7 +238,7 @@ function animateCountdown(num, callback) {
     display:flex;align-items:center;justify-content:center;z-index:1000;
   `;
   document.body.appendChild(overlay);
-  let count = num;
+    let count = num;
   overlay.textContent = count;
   const interval = setInterval(() => {
     count--;
@@ -242,7 +255,7 @@ function animateCountdown(num, callback) {
 function togglePause() {
   gamePaused = !gamePaused;
   pauseBtn.textContent = gamePaused ? "Reprendre" : "Pause";
-    if (!gamePaused) requestAnimationFrame(gameLoop);
+  if (!gamePaused) requestAnimationFrame(gameLoop);
 }
 
 // 📊 Stats
@@ -272,12 +285,16 @@ function hideStats() {
 // 🧨 Fin du jeu
 function endGame() {
   gameStarted = false;
+  menuMode = true;
   paramPanel.style.display = 'flex';
   pauseBtn.style.display = 'none';
   if (gameSettings.fxOn) sounds.gameover.play();
   if (gameSettings.musicOn) sounds.music.pause();
+
   updateLocalStats();
-  alert(`Fin du jeu ! Score: ${score}`);
+  if (auth.currentUser) saveScore(score);
+
+  animateMenuBackground();
 }
 
 // 💾 Sauvegarde locale
