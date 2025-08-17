@@ -1,59 +1,59 @@
 // ========================
-// LEADERBOARD.JS
+// LEADERBOARD.JS (Realtime DB)
 // By Kabir
 // ========================
 
-import { auth, firestore } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import {
-  doc, setDoc, getDoc,
-  collection, query, orderBy, getDocs, limit
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+  ref, set, get, child, onValue
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
 // 🔹 Sauvegarde du score
 export async function saveScore(score) {
   if (!auth.currentUser) return;
   const uid = auth.currentUser.uid;
-  const userDocRef = doc(firestore, 'users', uid);
+  const username = auth.currentUser.displayName || "Player";
 
-  const docSnap = await getDoc(userDocRef);
-  if (!docSnap.exists() || score > docSnap.data().bestScore) {
-    await setDoc(userDocRef, {
-      bestScore: score,
-      displayName: auth.currentUser.displayName || "Player"
-    }, { merge: true });
+  const userRef = ref(db, 'scores/' + uid);
+  const snapshot = await get(userRef);
+
+  const previous = snapshot.exists() ? snapshot.val().score : 0;
+  if (score > previous) {
+    await set(userRef, {
+      score,
+      timestamp: Date.now(),
+      username
+    });
   }
 }
 
-// 🔹 Récupère le meilleur score d’un joueur
-export async function loadPlayerBestScore(uid) {
-  const userDoc = doc(firestore, 'users', uid);
-  const docSnap = await getDoc(userDoc);
-  if (docSnap.exists()) return docSnap.data().bestScore || 0;
-  return 0;
-}
-
 // 🔹 Charge le classement
-export async function loadLeaderboard(topOnly = true) {
+export async function loadLeaderboard() {
   const rankingBoard = document.getElementById('rankingBoard');
   rankingBoard.innerHTML = "Chargement...";
 
-  const usersCol = collection(firestore, 'users');
-  const q = query(usersCol, orderBy('bestScore', 'desc'), limit(50));
-  const querySnapshot = await getDocs(q);
+  const scoresRef = ref(db, 'scores');
+  const snapshot = await get(scoresRef);
+
+  if (!snapshot.exists()) {
+    rankingBoard.innerHTML = "Aucun score trouvé.";
+    return;
+  }
+
+  const scores = Object.entries(snapshot.val())
+    .map(([uid, data]) => ({ uid, ...data }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 50);
 
   rankingBoard.innerHTML = '';
   let rank = 1;
-  querySnapshot.forEach(docSnap => {
-    const data = docSnap.data();
+  scores.forEach(player => {
     const div = document.createElement('div');
-
-    // 🥇 Médailles
     let medal = '';
     if (rank === 1) medal = '🥇 ';
     else if (rank === 2) medal = '🥈 ';
     else if (rank === 3) medal = '🥉 ';
-
-    div.textContent = `${medal}${rank}. ${data.displayName || 'Player'} - ${data.bestScore || 0}`;
+    div.textContent = `${medal}${rank}. ${player.username} - ${player.score}`;
     rankingBoard.appendChild(div);
     rank++;
   });
@@ -61,12 +61,14 @@ export async function loadLeaderboard(topOnly = true) {
   // 🔹 Rang du joueur connecté
   if (auth.currentUser) {
     const uid = auth.currentUser.uid;
-    const playerScore = await loadPlayerBestScore(uid);
-    const myRank = querySnapshot.docs.findIndex(d => d.id === uid) + 1;
+    const myData = scores.find(p => p.uid === uid);
+    const myRank = scores.findIndex(p => p.uid === uid) + 1;
     const myRankDiv = document.getElementById('myRank');
-    myRankDiv.textContent = myRank > 0
-      ? `Ton rang: ${myRank} (Score: ${playerScore})`
-      : `Ton meilleur score: ${playerScore}`;
+    if (myData) {
+      myRankDiv.textContent = `Ton rang: ${myRank} (Score: ${myData.score})`;
+    } else {
+      myRankDiv.textContent = `Tu n'es pas encore classé.`;
+    }
   }
 }
 
