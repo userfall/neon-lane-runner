@@ -8,21 +8,62 @@
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet" />
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="css/game.css" />
-
   <style>
-    body, html { margin:0; padding:0; overflow:hidden; font-family:'Orbitron',sans-serif; background:#000; color:#0ff; }
+    body, html {
+      margin:0; padding:0; overflow:hidden;
+      font-family:'Orbitron',sans-serif; background:#000; color:#0ff;
+    }
     canvas { display:block; }
-    button { font-family:'Orbitron',sans-serif; font-size:16px; padding:8px 12px; border-radius:8px; border:none; cursor:pointer; background:#00f0ff; color:#000; }
-    #hud { position:fixed; top:10px; left:50%; transform:translateX(-50%); font-size:18px; display:flex; gap:20px; z-index:100; }
-    #paramPanel { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:10px; z-index:100; }
-    #pauseOverlay, #victoryOverlay, #congratsOverlay, #statsPanel, #leaderboardDiv { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); color:#0ff; z-index:1000; align-items:center; justify-content:center; flex-direction:column; }
-    #statsPanel { background:rgba(0,0,0,0.9); padding:20px; border-radius:12px; position:absolute; top:20px; left:20px; display:none; }
-    #leaderboardDiv { background:rgba(0,0,0,0.95); padding:20px; border-radius:12px; width:300px; left:50%; top:50%; transform:translate(-50%,-50%); display:none; flex-direction:column; gap:10px; }
+
+    /* HUD */
+    #hud {
+      position:fixed; top:10px; left:50%; transform:translateX(-50%);
+      font-size:18px; display:flex; gap:20px; z-index:100;
+    }
+
+    /* Menu horizontal */
+    #paramPanel {
+      position:fixed; bottom:10px; left:50%; transform:translateX(-50%);
+      display:flex; gap:15px; z-index:100;
+      flex-wrap: wrap; justify-content:center;
+    }
+    #paramPanel button, #leaderboardBtn {
+      font-size:16px; padding:8px 12px; border-radius:8px; border:none;
+      cursor:pointer; background:#00f0ff; color:#000;
+    }
+
+    /* Classement bouton à droite */
+    #leaderboardBtn {
+      position:fixed; bottom:10px; right:10px; z-index:100;
+    }
+
+    /* Overlays */
+    #pauseOverlay, #victoryOverlay, #congratsOverlay, #statsPanel, #leaderboardDiv {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85);
+      color:#0ff; z-index:1000; align-items:center; justify-content:center; flex-direction:column;
+    }
+
+    #statsPanel {
+      background:rgba(0,0,0,0.9); padding:20px; border-radius:12px;
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      display:none; min-width:250px; text-align:center;
+    }
+
+    #leaderboardDiv {
+      background:rgba(0,0,0,0.95); padding:20px; border-radius:12px;
+      width:300px; left:50%; top:50%; transform:translate(-50%,-50%);
+      display:none; flex-direction:column; gap:10px;
+    }
     #leaderboardDiv h2 { margin:0 0 10px 0; color:#00f0ff; text-align:center; }
     #rankingBoard { max-height:300px; overflow-y:auto; margin-bottom:10px; }
+
     @keyframes pulse { 0%,100%{transform:scale(1);}50%{transform:scale(1.1);} }
+
+    @media (max-width:600px){
+      #paramPanel { gap:8px; }
+      #paramPanel button { font-size:14px; padding:6px 10px; }
+      #hud { font-size:16px; gap:10px; }
+    }
   </style>
 </head>
 <body>
@@ -36,7 +77,7 @@
     <div id="lives">Vies: 3</div>
   </div>
 
-  <!-- Paramètres -->
+  <!-- Menu horizontal -->
   <div id="paramPanel">
     <button id="musicToggle">Musique ON</button>
     <button id="fxToggle">FX ON</button>
@@ -44,18 +85,14 @@
     <button id="startBtn">START</button>
   </div>
 
-  <!-- Pause / Leaderboard -->
+  <!-- Pause -->
   <button id="pauseBtn" style="display:none;">Pause</button>
-  <button id="leaderboardBtn">Classement</button>
-
-  <!-- Pause Overlay -->
-  <div id="pauseOverlay">
-    <p>⏸️ Jeu en pause</p>
-    <button id="resumeBtn">Reprendre</button>
-  </div>
 
   <!-- Stats Panel -->
-  <div id="statsPanel"></div>
+  <div id="statsPanel">
+    <div id="statsContent"></div>
+    <button id="closeStatsBtn">Retour au jeu</button>
+  </div>
 
   <!-- Victory Overlay -->
   <div id="victoryOverlay">
@@ -64,13 +101,8 @@
     <button id="replayBtn">Rejouer</button>
   </div>
 
-  <!-- Congrats Overlay (>5000 points) -->
-  <div id="congratsOverlay">
-    <canvas></canvas>
-    <div class="message-overlay">🚀 Tu as explosé les 5000 points !</div>
-  </div>
-
   <!-- Leaderboard -->
+  <button id="leaderboardBtn">Classement</button>
   <div id="leaderboardDiv">
     <h2>🏆 Classement</h2>
     <div id="rankingBoard">Chargement...</div>
@@ -78,8 +110,6 @@
     <button id="closeLeaderboardBtn">Fermer</button>
   </div>
 
-  <!-- Scripts -->
   <script type="module" src="js/game.js"></script>
-
 </body>
 </html>
