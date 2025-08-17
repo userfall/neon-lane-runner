@@ -1,205 +1,94 @@
-/* 🌌 Fond général */
-body, html {
+body {
   margin: 0;
   padding: 0;
   font-family: 'Orbitron', sans-serif;
-  background: #000;
+  background: linear-gradient(135deg,#0f0c29,#302b63,#24243e);
+  color: #0ff;
   overflow: hidden;
 }
 
-/* 🎮 Canvas principal */
 canvas {
   display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
+  width: 100vw;
+  height: 100vh;
 }
 
-/* 🧠 HUD */
+/* HUD */
 #hud {
   position: absolute;
   top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 20px;
-  font-size: 22px;
+  left: 10px;
+  font-size: 18px;
   color: #0ff;
-  text-shadow: 0 0 10px #0ff;
-  z-index: 10;
-  pointer-events: none;
 }
 
-/* ⚙️ Panneau de paramètres */
-#paramPanel {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 15px;
-  z-index: 10;
-}
-
-#paramPanel button {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  background: #0ff;
-  color: #000;
-  box-shadow: 0 0 10px #0ff;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-}
-
-#paramPanel button:hover {
-  background: #0aa;
-  box-shadow: 0 0 20px #0ff inset, 0 0 25px #0ff;
-}
-
-/* 📊 Panneau de stats */
-#statsPanel {
-  position: absolute;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
+.btn {
+  margin-left: 10px;
+  padding: 5px 10px;
   background: #111;
-  padding: 10px 20px;
-  border-radius: 10px;
   color: #0ff;
-  font-size: 18px;
-  box-shadow: 0 0 10px #0ff;
-  z-index: 100;
-}
-
-/* 🎉 Victoire */
-#victoryOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.95);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  z-index: 200;
-  color: #0ff;
-  font-size: 28px;
-  text-align: center;
-  animation: fadeIn 0.5s ease;
-}
-
-#victoryOverlay canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 199;
-}
-
-#victoryOverlay button {
-  padding: 15px 25px;
-  border: none;
-  border-radius: 12px;
-  background: #0ff;
-  color: #000;
+  border: 1px solid #0ff;
   cursor: pointer;
-  font-size: 18px;
-  font-weight: bold;
-  box-shadow: 0 0 10px #0ff;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  transition: 0.2s;
 }
-
-#victoryOverlay button:hover {
-  background: #0aa;
-  box-shadow: 0 0 20px #0ff inset, 0 0 25px #0ff;
-}
-
-/* ⏸️ Bouton Pause */
-#pauseBtn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 100;
-  padding: 10px 15px;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
+.btn:hover {
   background: #0ff;
-  color: #000;
-  box-shadow: 0 0 10px #0ff;
-  cursor: pointer;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  color: #111;
 }
 
-#pauseBtn:hover {
-  background: #0aa;
-  box-shadow: 0 0 20px #0ff inset, 0 0 25px #0ff;
-}
-
-/* 🛑 Panneau Pause */
-#pauseOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.8);
-  color: #0ff;
-  font-size: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  text-shadow: 0 0 20px #0ff;
-  animation: fadeIn 0.3s ease;
-}
-
-/* 🔥 Animation Nouveau Record */
-@keyframes pulse {
-  0% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(1.1); }
-  100% { transform: translate(-50%, -50%) scale(1); }
-}
-
-/* ✨ Fade In */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-/* ⏳ Loader */
-#loader {
+/* Overlay Classement */
+.overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  color: #0ff;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.9);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
-  z-index: 9999;
-  text-shadow: 0 0 10px #0ff;
-  animation: fadeIn 0.4s ease;
 }
+.leaderboard {
+  background: #111;
+  padding: 20px;
+  border: 2px solid #0ff;
+  border-radius: 10px;
+  width: 300px;
+  color: #0ff;
+}
+.hidden { display: none; }
 
-.spinner {
-  width: 60px;
-  height: 60px;
-  border: 6px solid #0ff;
-  border-top: 6px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+/* Page d'accueil */
+.menu-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+.menu-container {
+  background: rgba(0,0,0,0.8);
+  padding: 30px;
+  border: 2px solid #0ff;
+  border-radius: 15px;
+  text-align: center;
+}
+.auth-card {
+  margin-top: 20px;
+}
+.auth-card input {
+  display: block;
+  margin: 10px auto;
+  padding: 8px;
+  width: 80%;
+  border: none;
+  border-radius: 5px;
+}
+.auth-card button {
+  padding: 10px 20px;
+  border: none;
+  background: #0ff;
+  color: #111;
+  cursor: pointer;
+}
+.title {
+  font-size: 2em;
   margin-bottom: 20px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
