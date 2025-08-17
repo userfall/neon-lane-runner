@@ -10,57 +10,138 @@
 
   <style>
     body, html {
-      margin:0; padding:0; overflow:hidden;
-      font-family:'Orbitron',sans-serif; background:#000; color:#0ff;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: 'Orbitron', sans-serif;
+      background: #000;
+      color: #0ff;
     }
-    canvas { display:block; }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
 
     /* HUD */
     #hud {
-      position:fixed; top:10px; left:50%; transform:translateX(-50%);
-      font-size:18px; display:flex; gap:20px; z-index:100;
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 18px;
+      display: flex;
+      gap: 20px;
+      z-index: 100;
     }
 
     /* Menu horizontal */
     #paramPanel {
-      position:fixed; bottom:10px; left:50%; transform:translateX(-50%);
-      display:flex; gap:15px; z-index:100;
-      flex-wrap: wrap; justify-content:center;
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 15px;
+      z-index: 100;
+      flex-wrap: wrap;
+      justify-content: center;
     }
-    #paramPanel button, #leaderboardBtn {
-      font-size:16px; padding:8px 12px; border-radius:8px; border:none;
-      cursor:pointer; background:#00f0ff; color:#000;
+
+    #paramPanel button, #leaderboardBtn, #pauseBtn, #replayBtn, #closeStatsBtn, #closeLeaderboardBtn {
+      font-size: 16px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #00f0ff;
+      color: #000;
     }
 
     /* Classement bouton en haut à droite */
     #leaderboardBtn {
-      position:fixed; top:10px; right:10px; z-index:100;
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 100;
+    }
+
+    #pauseBtn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 100;
     }
 
     /* Overlays */
     #pauseOverlay, #victoryOverlay, #statsPanel, #leaderboardDiv {
-      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85);
-      color:#0ff; z-index:1000; align-items:center; justify-content:center; flex-direction:column;
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      color: #0ff;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
     }
 
     #statsPanel {
-      background:rgba(0,0,0,0.9); padding:20px; border-radius:12px;
-      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      display:none; min-width:250px; text-align:center;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 20px;
+      border-radius: 12px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 250px;
+      text-align: center;
     }
 
     #leaderboardDiv {
-      background:rgba(0,0,0,0.95); padding:20px; border-radius:12px;
-      width:300px; left:50%; top:50%; transform:translate(-50%,-50%);
-      display:none; flex-direction:column; gap:10px;
+      background: rgba(0, 0, 0, 0.95);
+      padding: 20px;
+      border-radius: 12px;
+      width: 300px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      flex-direction: column;
+      gap: 10px;
     }
-    #leaderboardDiv h2 { margin:0 0 10px 0; color:#00f0ff; text-align:center; }
-    #rankingBoard { max-height:300px; overflow-y:auto; margin-bottom:10px; }
 
-    @media (max-width:600px){
-      #paramPanel { gap:8px; }
-      #paramPanel button { font-size:14px; padding:6px 10px; }
-      #hud { font-size:16px; gap:10px; }
+    #leaderboardDiv h2 {
+      margin: 0 0 10px 0;
+      color: #00f0ff;
+      text-align: center;
+    }
+
+    #rankingBoard {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+    }
+
+    #fireworksCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @media (max-width: 600px) {
+      #paramPanel { gap: 8px; }
+      #paramPanel button { font-size: 14px; padding: 6px 10px; }
+      #hud { font-size: 16px; gap: 10px; }
     }
   </style>
 </head>
