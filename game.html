@@ -21,41 +21,45 @@
       font-size:18px; display:flex; gap:20px; z-index:100;
     }
 
-    /* Menu horizontal */
+    /* Menu horizontal en bas */
     #paramPanel {
       position:fixed; bottom:10px; left:50%; transform:translateX(-50%);
       display:flex; gap:15px; z-index:100;
       flex-wrap: wrap; justify-content:center;
     }
-    #paramPanel button, #leaderboardBtn {
+    #paramPanel button {
       font-size:16px; padding:8px 12px; border-radius:8px; border:none;
       cursor:pointer; background:#00f0ff; color:#000;
     }
 
-    /* Classement bouton à droite */
+    /* Pause bouton */
+    #pauseBtn {
+      position:fixed; bottom:10px; right:10px; z-index:100; display:none;
+      font-size:16px; padding:8px 12px; border-radius:8px; border:none;
+      background:#00f0ff; color:#000; cursor:pointer;
+    }
+
+    /* Leaderboard bouton et div */
     #leaderboardBtn {
-      position:fixed; bottom:10px; right:10px; z-index:100;
-    }
-
-    /* Overlays */
-    #pauseOverlay, #victoryOverlay, #congratsOverlay, #statsPanel, #leaderboardDiv {
-      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85);
-      color:#0ff; z-index:1000; align-items:center; justify-content:center; flex-direction:column;
-    }
-
-    #statsPanel {
-      background:rgba(0,0,0,0.9); padding:20px; border-radius:12px;
-      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      display:none; min-width:250px; text-align:center;
+      position:fixed; top:10px; left:10px; z-index:100;
+      font-size:16px; padding:8px 12px; border-radius:8px; border:none;
+      background:#00f0ff; color:#000; cursor:pointer;
     }
 
     #leaderboardDiv {
       background:rgba(0,0,0,0.95); padding:20px; border-radius:12px;
-      width:300px; left:50%; top:50%; transform:translate(-50%,-50%);
-      display:none; flex-direction:column; gap:10px;
+      width:300px; left:10px; top:50px; transform:none;
+      display:none; flex-direction:column; gap:10px; z-index:1000;
     }
     #leaderboardDiv h2 { margin:0 0 10px 0; color:#00f0ff; text-align:center; }
     #rankingBoard { max-height:300px; overflow-y:auto; margin-bottom:10px; }
+
+    /* Stats panel */
+    #statsPanel {
+      background:rgba(0,0,0,0.9); padding:20px; border-radius:12px;
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      display:none; min-width:250px; text-align:center; z-index:1000;
+    }
 
     @keyframes pulse { 0%,100%{transform:scale(1);}50%{transform:scale(1.1);} }
 
@@ -85,8 +89,8 @@
     <button id="startBtn">START</button>
   </div>
 
-  <!-- Pause -->
-  <button id="pauseBtn" style="display:none;">Pause</button>
+  <!-- Pause bouton -->
+  <button id="pauseBtn">Pause</button>
 
   <!-- Stats Panel -->
   <div id="statsPanel">
@@ -110,6 +114,7 @@
     <button id="closeLeaderboardBtn">Fermer</button>
   </div>
 
+  <!-- Script -->
   <script type="module" src="js/game.js"></script>
 </body>
 </html>
