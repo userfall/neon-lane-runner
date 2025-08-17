@@ -1,89 +1,60 @@
-import { auth, db } from './firebase-config.js';
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  query,
-  orderBy,
-  limit
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+// leaderboard.js
+import { db, auth } from './firebase-config.js';
+import { ref, push, set, get } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-// 🔐 Nettoyage du pseudo
-function sanitizeKey(s) {
-  return String(s || "anon").replace(/[.#$\[\]\/]/g, "_");
+// Sauvegarder le score de l'utilisateur
+export function saveScore(score) {
+  if (!auth.currentUser) return; // Si pas connecté, ne rien faire
+  const userId = auth.currentUser.uid;
+  const userName = auth.currentUser.displayName || "Anonyme";
+
+  const scoresRef = ref(db, 'scores/');
+  const newScoreRef = push(scoresRef); // Crée un nouvel identifiant unique
+  set(newScoreRef, {
+    userId,
+    userName,
+    score,
+    timestamp: Date.now()
+  });
 }
 
-// 🏆 Enregistrer le score
-export async function saveScore(score) {
-  const user = auth.currentUser;
-  if (!user) return;
-
-  const pseudo = user.displayName || user.email?.split('@')[0] || "anon";
-  const key = sanitizeKey(pseudo);
-  const ref = doc(db, "leaderboard", key);
-  const snap = await getDoc(ref);
-  const existing = snap.exists() ? snap.data() : null;
-
-  if (!existing || score > (existing.score || 0)) {
-    await setDoc(ref, {
-      pseudo,
-      score: Number(score),
-      timestamp: Date.now()
-    });
-  }
-}
-
-// 📊 Charger le classement
+// Charger et afficher le classement
 export async function loadLeaderboard() {
-  const boardEl = document.getElementById("rankingBoard");
-  const myRankEl = document.getElementById("myRank");
-  boardEl.innerHTML = "Chargement...";
+  const scoresRef = ref(db, 'scores/');
+  const snapshot = await get(scoresRef);
+  const rankingBoard = document.getElementById('rankingBoard');
+  if (!snapshot.exists()) {
+    rankingBoard.innerHTML = "Aucun score pour le moment.";
+    return;
+  }
 
-  try {
-    const ref = collection(db, "leaderboard");
-    const q = query(ref, orderBy("score", "desc"), limit(50));
-    const snapshot = await getDocs(q);
+  const scores = Object.values(snapshot.val());
+  // Trier du plus grand au plus petit
+  scores.sort((a, b) => b.score - a.score);
 
-    const entries = [];
-    snapshot.forEach(doc => {
-      const val = doc.data();
-      if (val?.pseudo && val?.score != null) {
-        entries.push(val);
-      }
-    });
+  rankingBoard.innerHTML = "";
+  scores.slice(0, 10).forEach((s, index) => {
+    const div = document.createElement('div');
+    div.textContent = `${index + 1}. ${s.userName} - ${s.score} pts`;
+    rankingBoard.appendChild(div);
+  });
 
-    let html = "<ol>";
-    const current = auth.currentUser?.displayName || auth.currentUser?.email?.split('@')[0];
-    entries.forEach((e, i) => {
-      const isCurrent = sanitizeKey(e.pseudo) === sanitizeKey(current);
-      html += `<li${isCurrent ? ' style="color:#0f0;font-weight:bold;"' : ''}>
-        <b>#${i + 1}</b> ${e.pseudo} — <b>${e.score}</b> pts
-      </li>`;
-    });
-    html += "</ol>";
-    boardEl.innerHTML = html;
-
-    const idx = entries.findIndex(e => sanitizeKey(e.pseudo) === sanitizeKey(current));
-    if (idx >= 0) {
-      myRankEl.innerHTML = `Ton rang : <b>#${idx + 1}</b> — score : <b>${entries[idx].score}</b>`;
+  // Afficher le rang de l'utilisateur connecté
+  if (auth.currentUser) {
+    const myScoreIndex = scores.findIndex(s => s.userId === auth.currentUser.uid);
+    const myRankDiv = document.getElementById('myRank');
+    if (myScoreIndex !== -1) {
+      myRankDiv.textContent = `Ton rang : ${myScoreIndex + 1} / ${scores.length}`;
     } else {
-      myRankEl.innerText = "Tu n'as pas encore de score enregistré.";
+      myRankDiv.textContent = "";
     }
-  } catch (err) {
-    boardEl.innerHTML = `<span style="color:red">Erreur chargement classement</span>`;
-    console.error("Erreur leaderboard:", err);
   }
 }
 
-// 🧠 Fermeture du panneau
+// Fermer le panneau du classement
 export function setupLeaderboardClose() {
   const closeBtn = document.getElementById("closeLeaderboardBtn");
-  const overlay = document.getElementById("leaderboardDiv");
-  if (closeBtn && overlay) {
-    closeBtn.addEventListener("click", () => {
-      overlay.style.display = "none";
-    });
-  }
+  closeBtn.addEventListener('click', () => {
+    document.getElementById("leaderboardDiv").style.display = "none";
+  });
 }
