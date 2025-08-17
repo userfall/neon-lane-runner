@@ -1,79 +1,64 @@
-// js/leaderboard.js
+// ========================
+// LEADERBOARD.JS
+// By Kabir
+// ========================
+
 import { auth, db } from './firebase-config.js';
-import { ref, set, push, get, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+import { doc, setDoc, getDoc, collection, query, orderBy, getDocs, limit } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-// DOM
-const leaderboardDiv = document.getElementById("leaderboardDiv");
-const rankingBoard = document.getElementById("rankingBoard");
-const myRankEl = document.getElementById("myRank");
-const closeBtn = document.getElementById("closeLeaderboardBtn");
-
-// 🔹 Fermer le leaderboard
-export function setupLeaderboardClose() {
-  closeBtn.addEventListener("click", () => {
-    leaderboardDiv.style.display = "none";
-  });
-}
-
-// 🔹 Sauvegarder un score
+// 🔹 Sauvegarde du score
 export async function saveScore(score) {
   if (!auth.currentUser) return;
+  const uid = auth.currentUser.uid;
+  const userDocRef = doc(db, 'users', uid);
 
-  const userId = auth.currentUser.uid;
-  const username = auth.currentUser.displayName || "Anonyme";
-
-  try {
-    const scoreRef = ref(db, 'scores/' + userId);
-    await set(scoreRef, {
-      username,
-      score,
-      timestamp: Date.now()
-    });
-    console.log("Score sauvegardé :", score);
-  } catch (err) {
-    console.error("Erreur sauvegarde score :", err);
+  const docSnap = await getDoc(userDocRef);
+  if (!docSnap.exists() || score > docSnap.data().bestScore) {
+    await setDoc(userDocRef, { bestScore: score, displayName: auth.currentUser.displayName || "Player" }, { merge: true });
   }
 }
 
-// 🔹 Charger et afficher le leaderboard
-export async function loadLeaderboard() {
+// 🔹 Récupère le meilleur score d’un joueur
+export async function loadPlayerBestScore(uid) {
+  const userDoc = doc(db, 'users', uid);
+  const docSnap = await getDoc(userDoc);
+  if (docSnap.exists()) return docSnap.data().bestScore || 0;
+  return 0;
+}
+
+// 🔹 Charge le classement (ne prend que le meilleur score de chaque joueur)
+export async function loadLeaderboard(topOnly = true) {
+  const rankingBoard = document.getElementById('rankingBoard');
   rankingBoard.innerHTML = "Chargement...";
 
-  try {
-    const scoresRef = ref(db, 'scores');
-    const scoresSnap = await get(scoresRef);
+  const usersCol = collection(db, 'users');
+  const q = query(usersCol, orderBy('bestScore', 'desc'), limit(50));
+  const querySnapshot = await getDocs(q);
 
-    if (!scoresSnap.exists()) {
-      rankingBoard.innerHTML = "Aucun score pour l'instant.";
-      return;
-    }
+  rankingBoard.innerHTML = '';
+  let rank = 1;
+  querySnapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const div = document.createElement('div');
+    div.textContent = `${rank}. ${data.displayName || 'Player'} - ${data.bestScore || 0}`;
+    rankingBoard.appendChild(div);
+    rank++;
+  });
 
-    const scoresObj = scoresSnap.val();
-    const scoresArray = Object.values(scoresObj);
-
-    // Trier du meilleur au moins bon
-    scoresArray.sort((a, b) => b.score - a.score);
-
-    // Afficher les 10 meilleurs
-    rankingBoard.innerHTML = "";
-    scoresArray.slice(0, 10).forEach((entry, index) => {
-      const div = document.createElement("div");
-      div.textContent = `${index + 1}. ${entry.username} - ${entry.score} pts`;
-      rankingBoard.appendChild(div);
-    });
-
-    // Afficher le rang du joueur connecté
-    if (auth.currentUser) {
-      const myScore = scoresObj[auth.currentUser.uid];
-      if (myScore) {
-        const rank = scoresArray.findIndex(s => s.username === myScore.username && s.score === myScore.score) + 1;
-        myRankEl.textContent = `Ton rang : ${rank} / ${scoresArray.length}`;
-      } else {
-        myRankEl.textContent = "Ton score n'est pas encore enregistré.";
-      }
-    }
-  } catch (err) {
-    console.error("Erreur chargement leaderboard :", err);
-    rankingBoard.innerHTML = "Erreur lors du chargement du classement.";
+  // Affiche le rang du joueur connecté
+  if (auth.currentUser) {
+    const uid = auth.currentUser.uid;
+    const playerScore = await loadPlayerBestScore(uid);
+    const myRank = Array.from(querySnapshot.docs).findIndex(d => d.id === uid) + 1;
+    const myRankDiv = document.getElementById('myRank');
+    myRankDiv.textContent = myRank > 0 ? `Ton rang: ${myRank} (Score: ${playerScore})` : `Ton meilleur score: ${playerScore}`;
   }
+}
+
+// 🔹 Fermeture du leaderboard
+export function setupLeaderboardClose() {
+  const closeBtn = document.getElementById('closeLeaderboardBtn');
+  closeBtn.addEventListener('click', () => {
+    document.getElementById('leaderboardDiv').style.display = "none";
+  });
 }
