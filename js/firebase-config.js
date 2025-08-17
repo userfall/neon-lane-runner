@@ -1,5 +1,6 @@
-// firebase-config.js
+// js/firebase-config.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
 // ==========================
@@ -16,8 +17,10 @@ const firebaseConfig = {
   measurementId: "G-V14E5S3QXC"
 };
 
-// Initialisation Firebase
+// 🔹 Initialisation Firebase
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db = getDatabase(app);
 
-export { db };
+// 🔹 Exports
+export { auth, db };
