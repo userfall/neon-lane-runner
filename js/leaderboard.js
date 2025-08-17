@@ -3,7 +3,7 @@
 // By Kabir
 // ========================
 
-import { auth, firestore } from './firebase-config.js'; // ✅ Firestore séparé
+import { auth, firestore } from './firebase-config.js';
 import {
   doc, setDoc, getDoc,
   collection, query, orderBy, getDocs, limit
@@ -13,7 +13,7 @@ import {
 export async function saveScore(score) {
   if (!auth.currentUser) return;
   const uid = auth.currentUser.uid;
-  const userDocRef = doc(firestore, 'users', uid); // ✅ Firestore utilisé
+  const userDocRef = doc(firestore, 'users', uid);
 
   const docSnap = await getDoc(userDocRef);
   if (!docSnap.exists() || score > docSnap.data().bestScore) {
@@ -26,7 +26,7 @@ export async function saveScore(score) {
 
 // 🔹 Récupère le meilleur score d’un joueur
 export async function loadPlayerBestScore(uid) {
-  const userDoc = doc(firestore, 'users', uid); // ✅ Firestore utilisé
+  const userDoc = doc(firestore, 'users', uid);
   const docSnap = await getDoc(userDoc);
   if (docSnap.exists()) return docSnap.data().bestScore || 0;
   return 0;
@@ -37,7 +37,7 @@ export async function loadLeaderboard(topOnly = true) {
   const rankingBoard = document.getElementById('rankingBoard');
   rankingBoard.innerHTML = "Chargement...";
 
-  const usersCol = collection(firestore, 'users'); // ✅ Firestore utilisé
+  const usersCol = collection(firestore, 'users');
   const q = query(usersCol, orderBy('bestScore', 'desc'), limit(50));
   const querySnapshot = await getDocs(q);
 
