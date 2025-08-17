@@ -36,6 +36,7 @@ const fireworksCanvas = document.getElementById('fireworksCanvas');
 const statsPanel = document.getElementById('statsPanel');
 const pauseBtn = document.getElementById('pauseBtn');
 const pauseOverlay = document.getElementById('pauseOverlay');
+const resumeBtn = document.getElementById('resumeBtn');
 const loader = document.getElementById('loader');
 const leaderboardBtn = document.getElementById('leaderboardBtn');
 
@@ -85,6 +86,12 @@ pauseBtn.addEventListener('click', () => {
   pauseBtn.textContent = gamePaused ? "Reprendre" : "Pause";
   pauseOverlay.style.display = gamePaused ? "flex" : "none";
   if (!gamePaused && gameStarted) requestAnimationFrame(gameLoop);
+});
+resumeBtn.addEventListener('click', () => {
+  gamePaused = false;
+  pauseOverlay.style.display = "none";
+  pauseBtn.textContent = "Pause";
+  requestAnimationFrame(gameLoop);
 });
 leaderboardBtn.addEventListener('click', () => {
   document.getElementById("leaderboardDiv").style.display = "block";
@@ -136,7 +143,6 @@ function startGame() {
   updateLocalStats();
   animateCountdown(3, () => requestAnimationFrame(gameLoop));
 }
-
 // 📊 Statistiques locales
 function updateLocalStats() {
   let played = Number(localStorage.getItem("gamesPlayed")) || 0;
@@ -156,23 +162,23 @@ function updateLocalStats() {
 // 🎉 Nouveau record
 function showNewRecord(score) {
   const overlay = document.createElement('div');
-  overlay.textContent = `🔥 Nouveau record : ${score} pts ! 🔥`;
+  overlay.textContent = `🏆 Nouveau record : ${score} pts ! Tu es une légende !`;
   overlay.style.cssText = `
     position:absolute;
     top:30%;
     left:50%;
     transform:translate(-50%,-50%);
-    background:#111;
+    background:#222;
     color:#ff0;
     font-size:32px;
-    padding:16px 24px;
-    border-radius:10px;
+    padding:20px 30px;
+    border-radius:12px;
     box-shadow:0 0 20px #ff0;
     z-index:1000;
     animation: pulse 1s infinite;
   `;
   document.body.appendChild(overlay);
-  setTimeout(() => overlay.remove(), 3000);
+  setTimeout(() => overlay.remove(), 4000);
 }
 
 // ⏳ Compte à rebours
@@ -228,7 +234,7 @@ function gameLoop() {
       player.y < o.y + o.height &&
       player.y + player.height > o.y
     ) {
-            obstacles.splice(i, 1);
+      obstacles.splice(i, 1);
       lives--;
       if (gameSettings.fxOn) sounds.hit.play();
     }
@@ -282,7 +288,7 @@ function endGame() {
   if (gameSettings.fxOn) sounds.gameover.play();
   if (gameSettings.musicOn) sounds.music.pause();
 
-  alert("Game Over ! Score: " + score);
+  if (score >= 5000) showFireworksMessage();
 
   if (score >= 2000 && !fireworksLaunched) {
     fireworksLaunched = true;
@@ -305,7 +311,7 @@ function drawBackground() {
   ctx.drawImage(backgroundImg, 0, bgY, canvas.width, canvas.height);
 }
 
-// 👾 Boss IA — suit le joueur lentement
+// 👾 Boss IA
 function moveBoss() {
   const bossSpeed = 0.8 + Math.floor(score / 600) * 0.2;
   if (player.x < boss.x - 10) boss.x -= bossSpeed;
@@ -328,7 +334,7 @@ function moveBoss() {
   if (boss.y > canvas.height) boss.y = -100;
 }
 
-// 🎆 Feux d’artifice à la victoire
+// 🎆 Feux d’artifice
 function launchFireworks() {
   const ctxF = fireworksCanvas.getContext('2d');
   fireworksCanvas.width = window.innerWidth;
@@ -365,18 +371,38 @@ function launchFireworks() {
   animateFireworks();
 }
 
-// 📊 Affichage stats
-function updateStatsDisplay() {
-  document.getElementById("gamesPlayed").textContent = localStorage.getItem("gamesPlayed") || 0;
-  document.getElementById("bestScore").textContent = localStorage.getItem("bestScore") || 0;
-}
+// 🎉 Message spécial > 5000 points
+function showFireworksMessage() {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.5s ease-out;
+  `;
 
-// ✅ Animation pulse (si manquante)
-const style = document.createElement('style');
-style.innerHTML = `
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}`;
-document.head.appendChild(style);
+  const canvas = document.createElement('canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.position = "absolute";
+  canvas.style.top = "0";
+  canvas.style.left = "0";
+  overlay.appendChild(canvas);
+
+  const msg = document.createElement('div');
+  msg.textContent = `🚀 Tu as explosé les 5000 points !`;
+  msg.style.cssText = `
+    color: #fff;
+    font-size: 36px;
+    font-weight: bold;
+    text-shadow: 0 0 20px #0ff;
+    z-index: 10001;
+    animation: pulse 1s infinite;
+    margin-top: 20px;
+  `;
+  overlay.appendChild(msg);
