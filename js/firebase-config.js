@@ -1,18 +1,22 @@
+// firebase-config.js
+// Importation des fonctions nécessaires depuis le SDK Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
+// Configuration Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyCbNweC0aD8f_OGvbvmBVNSKbaMP_A4khI",
-  authDomain: "neonlanerunner.firebaseapp.com",
-  projectId: "neonlanerunner",
-  storageBucket: "neonlanerunner.appspot.com",
-  messagingSenderId: "916907926117",
-  appId: "1:916907926117:web:43f1d08ed90b864a985c8c"
+  apiKey: "AIzaSyDsoPkvefltYiKhHdlrGpd4GXbr8CEorcE",
+  authDomain: "kabir123-3b13b.firebaseapp.com",
+  databaseURL: "https://kabir123-3b13b-default-rtdb.europe-west1.firebasedatabase.app/",
+  projectId: "kabir123-3b13b",
+  storageBucket: "kabir123-3b13b.appspot.com",
+  messagingSenderId: "311432929296",
+  appId: "1:311432929296:web:9e648489cd02a6bc7aea95",
+  measurementId: "G-V14E5S3QXC"
 };
 
+// Initialisation de Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-export { app, auth, db };
+export const auth = getAuth(app);       // Pour l'authentification
+export const db = getDatabase(app);     // Pour Realtime Database
