@@ -47,7 +47,6 @@ let keys = {};
 let gameStarted = false;
 let fireworksLaunched = false;
 let gamePaused = false;
-
 // 🎮 Contrôles clavier
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
@@ -62,8 +61,6 @@ canvas.addEventListener('touchend', () => {
   keys['ArrowLeft'] = false;
   keys['ArrowRight'] = false;
 });
-
-// 🎮 Boutons HUD
 startBtn.addEventListener('click', startGame);
 musicToggle.addEventListener('click', () => {
   gameSettings.musicOn = !gameSettings.musicOn;
@@ -98,24 +95,6 @@ leaderboardBtn.addEventListener('click', () => {
   loadLeaderboard();
 });
 setupLeaderboardClose();
-
-// 🧠 Initialisation
-window.addEventListener('load', async () => {
-  await loadSettings();
-  lives = gameSettings.lives;
-  drawBackground();
-  updateStatsDisplay();
-  loader.style.display = "none";
-});
-window.addEventListener('resize', resizeCanvas);
-
-// 📐 Resize canvas
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-
-// 🚀 Démarrer le jeu
 function startGame() {
   gameStarted = true;
   score = 0;
@@ -143,7 +122,6 @@ function startGame() {
   updateLocalStats();
   animateCountdown(3, () => requestAnimationFrame(gameLoop));
 }
-// 📊 Statistiques locales
 function updateLocalStats() {
   let played = Number(localStorage.getItem("gamesPlayed")) || 0;
   localStorage.setItem("gamesPlayed", played + 1);
@@ -159,7 +137,10 @@ function updateLocalStats() {
   document.getElementById("bestScore").textContent = best;
 }
 
-// 🎉 Nouveau record
+function updateStatsDisplay() {
+  document.getElementById("gamesPlayed").textContent = localStorage.getItem("gamesPlayed") || 0;
+  document.getElementById("bestScore").textContent = localStorage.getItem("bestScore") || 0;
+}
 function showNewRecord(score) {
   const overlay = document.createElement('div');
   overlay.textContent = `🏆 Nouveau record : ${score} pts ! Tu es une légende !`;
@@ -180,8 +161,6 @@ function showNewRecord(score) {
   document.body.appendChild(overlay);
   setTimeout(() => overlay.remove(), 4000);
 }
-
-// ⏳ Compte à rebours
 function animateCountdown(num, callback) {
   const overlay = document.createElement('div');
   overlay.style.cssText = `
@@ -202,8 +181,6 @@ function animateCountdown(num, callback) {
     }
   }, 1000);
 }
-
-// 🎮 Boucle de jeu
 function gameLoop() {
   if (!gameStarted || gamePaused) return;
 
@@ -250,8 +227,6 @@ function gameLoop() {
   if (lives <= 0) endGame();
   else requestAnimationFrame(gameLoop);
 }
-
-// 🆙 Niveau
 function updateLevel() {
   if (score % 600 === 0 && score !== 0) {
     level++;
@@ -278,8 +253,6 @@ function showLevelUp(level) {
   document.body.appendChild(overlay);
   setTimeout(() => overlay.remove(), 1500);
 }
-
-// 🧨 Fin du jeu
 function endGame() {
   gameStarted = false;
   paramPanel.style.display = 'flex';
@@ -304,14 +277,10 @@ function endGame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBackground();
 }
-
-// 🎨 Fond défilant
 function drawBackground() {
   ctx.drawImage(backgroundImg, 0, bgY - canvas.height, canvas.width, canvas.height);
   ctx.drawImage(backgroundImg, 0, bgY, canvas.width, canvas.height);
 }
-
-// 👾 Boss IA
 function moveBoss() {
   const bossSpeed = 0.8 + Math.floor(score / 600) * 0.2;
   if (player.x < boss.x - 10) boss.x -= bossSpeed;
@@ -333,14 +302,12 @@ function moveBoss() {
 
   if (boss.y > canvas.height) boss.y = -100;
 }
-
-// 🎆 Feux d’artifice
 function launchFireworks() {
   const ctxF = fireworksCanvas.getContext('2d');
   fireworksCanvas.width = window.innerWidth;
   fireworksCanvas.height = window.innerHeight;
 
-  const particles = [];
+  let particles = [];
   for (let i = 0; i < 100; i++) {
     particles.push({
       x: fireworksCanvas.width / 2,
@@ -370,8 +337,6 @@ function launchFireworks() {
 
   animateFireworks();
 }
-
-// 🎉 Message spécial > 5000 points
 function showFireworksMessage() {
   const overlay = document.createElement('div');
   overlay.style.cssText = `
@@ -406,4 +371,37 @@ function showFireworksMessage() {
     margin-top: 20px;
   `;
   overlay.appendChild(msg);
+  document.body.appendChild(overlay);
+
+  const ctx = canvas.getContext("2d");
+  let particles = [];
+  for (let i = 0; i < 120; i++) {
+    particles.push({
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      dx: (Math.random() - 0.5) * 8,
+      dy: (Math.random() - 0.5) * 8,
+      radius: Math.random() * 3 + 2,
+      color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+      life: 100
+    });
+  }
+
+  function animateFireworks() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      p.x += p.dx;
+      p.y += p.dy;
+      p.life--;
+    });
+    particles = particles.filter(p => p.life > 0);
+    if (particles.length > 0) requestAnimationFrame(animateFireworks);
+  }
+
+  animateFireworks();
+  setTimeout(() => overlay.remove(), 4000);
 }
