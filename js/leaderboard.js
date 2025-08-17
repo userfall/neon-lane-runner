@@ -11,10 +11,10 @@ import {
   limit
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-
+// 🏆 Enregistrer le score dans Firestore
 export async function saveScore(score) {
   const user = auth.currentUser;
-  if (!user) return;
+  if (!user || !isMobile()) return;
 
   const pseudo = user.displayName || user.email.split('@')[0];
   const key = sanitizeKey(pseudo);
@@ -33,10 +33,15 @@ export async function saveScore(score) {
   }
 }
 
+// 📊 Charger et afficher le classement
 export async function loadLeaderboard() {
   const boardEl = document.getElementById("rankingBoard");
   const myRankEl = document.getElementById("myRank");
+
+  if (!boardEl || !myRankEl) return;
+
   boardEl.innerHTML = "Chargement...";
+  myRankEl.innerHTML = "";
 
   try {
     const ref = collection(db, "leaderboard");
@@ -81,18 +86,18 @@ export async function loadLeaderboard() {
   }
 }
 
-window.loadLeaderboard = loadLeaderboard;
-
+// 🧠 Fermer le panneau classement
 export function setupLeaderboardClose() {
   const closeBtn = document.getElementById("closeLeaderboardBtn");
   const overlay = document.getElementById("leaderboardDiv");
   if (closeBtn && overlay) {
     closeBtn.addEventListener("click", () => {
       overlay.style.display = "none";
-      const gameDiv = document.getElementById("gameDiv");
-      if (gameDiv) {
-        gameDiv.style.display = "flex";
-      }
     });
   }
 }
+
+// ✅ Activer au démarrage
+window.addEventListener("DOMContentLoaded", () => {
+  setupLeaderboardClose();
+});
