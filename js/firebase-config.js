@@ -1,10 +1,10 @@
 // firebase-config.js
-// Importation des fonctions nécessaires depuis le SDK Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 import { getDatabase } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-// Configuration Firebase
+// ==========================
+// CONFIG FIREBASE
+// ==========================
 const firebaseConfig = {
   apiKey: "AIzaSyDsoPkvefltYiKhHdlrGpd4GXbr8CEorcE",
   authDomain: "kabir123-3b13b.firebaseapp.com",
@@ -16,7 +16,8 @@ const firebaseConfig = {
   measurementId: "G-V14E5S3QXC"
 };
 
-// Initialisation de Firebase
+// Initialisation Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);       // Pour l'authentification
-export const db = getDatabase(app);     // Pour Realtime Database
+const db = getDatabase(app);
+
+export { db };
