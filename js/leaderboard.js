@@ -1,4 +1,5 @@
 import { auth, db } from './firebase-config.js';
+import { isMobile, sanitizeKey } from './utils.js';
 import {
   collection,
   doc,
