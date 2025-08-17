@@ -32,6 +32,7 @@ const fireworksCanvas = document.getElementById('fireworksCanvas');
 const statsPanel = document.getElementById('statsPanel');
 const pauseBtn = document.getElementById('pauseBtn');
 const pauseOverlay = document.getElementById('pauseOverlay');
+const resumeBtn = document.getElementById('resumeBtn');
 const loader = document.getElementById('loader');
 
 let player, obstacles, boss;
@@ -43,12 +44,6 @@ let gamePaused = false;
 
 document.addEventListener('keydown', e => keys[e.key] = true);
 document.addEventListener('keyup', e => keys[e.key] = false);
-document.getElementById("resumeBtn").addEventListener("click", () => {
-  gamePaused = false;
-  pauseOverlay.style.display = "none";
-  pauseBtn.textContent = "Pause";
-  requestAnimationFrame(gameLoop);
-});
 
 canvas.addEventListener('touchstart', e => {
   const touchX = e.touches[0].clientX;
@@ -71,13 +66,24 @@ replayBtn.addEventListener('click', () => {
   startGame();
 });
 pauseBtn.addEventListener('click', togglePause);
+resumeBtn.addEventListener('click', () => {
+  gamePaused = false;
+  pauseOverlay.style.display = "none";
+  pauseBtn.textContent = "Pause";
+  requestAnimationFrame(gameLoop);
+});
 
 window.addEventListener('load', async () => {
-  await loadSettings();
-  lives = gameSettings.lives;
-  drawBackground();
-  updateStatsDisplay();
-  loader.style.display = "none";
+  try {
+    await loadSettings();
+    lives = gameSettings.lives;
+    drawBackground();
+    updateStatsDisplay();
+  } catch (e) {
+    console.warn("Erreur chargement settings", e);
+  } finally {
+    loader.style.display = "none";
+  }
 });
 window.addEventListener('resize', resizeCanvas);
 
@@ -116,7 +122,11 @@ export function startGame(pseudo = "anon") {
 
 function animateCountdown(num, callback) {
   const overlay = document.createElement('div');
-  overlay.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);color:#0ff;font-size:100px;display:flex;align-items:center;justify-content:center;z-index:1000;";
+  overlay.style.cssText = `
+    position:absolute;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.8);color:#0ff;font-size:80px;
+    display:flex;align-items:center;justify-content:center;z-index:1000;
+  `;
   document.body.appendChild(overlay);
   let count = num;
   overlay.textContent = count;
@@ -155,7 +165,12 @@ function gameLoop() {
     ctx.fillStyle = "#f00";
     ctx.fillRect(o.x, o.y, o.width, o.height);
 
-    if (player.x < o.x + o.width && player.x + player.width > o.x && player.y < o.y + o.height && player.y + player.height > o.y) {
+    if (
+      player.x < o.x + o.width &&
+      player.x + player.width > o.x &&
+      player.y < o.y + o.height &&
+      player.y + player.height > o.y
+    ) {
       obstacles.splice(i, 1);
       lives--;
       if (gameSettings.fxOn) sounds.hit.play();
@@ -186,7 +201,12 @@ function updateLevel() {
 function showLevelUp(level) {
   const overlay = document.createElement('div');
   overlay.textContent = "Niveau " + level;
-  overlay.style.cssText = `position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);color:#0f0;font-size:60px;z-index:1000;text-shadow:0 0 20px #0f0;`;
+  overlay.style.cssText = `
+    position:absolute;top:40%;left:50%;
+    transform:translate(-50%,-50%);
+    color:#0f0;font-size:50px;z-index:1000;
+    text-shadow:0 0 20px #0f0;
+  `;
   document.body.appendChild(overlay);
   setTimeout(() => overlay.remove(), 1500);
 }
@@ -220,10 +240,9 @@ function drawBackground() {
   ctx.drawImage(backgroundImg, 0, bgY - canvas.height, canvas.width, canvas.height);
   ctx.drawImage(backgroundImg, 0, bgY, canvas.width, canvas.height);
 }
-
 function moveBoss() {
   const bossSpeed = 0.8 + Math.floor(score / 600) * 0.2;
-    if (player.x < boss.x - 10) boss.x -= bossSpeed;
+  if (player.x < boss.x - 10) boss.x -= bossSpeed;
   if (player.x > boss.x + 10) boss.x += bossSpeed;
   boss.y += 0.8;
 
@@ -307,9 +326,9 @@ function showNewRecord(score) {
     transform:translate(-50%,-50%);
     background:#111;
     color:#ff0;
-    font-size:40px;
-    padding:20px 30px;
-    border-radius:12px;
+    font-size:32px;
+    padding:16px 24px;
+    border-radius:10px;
     box-shadow:0 0 20px #ff0;
     z-index:1000;
     animation: pulse 1s infinite;
@@ -330,21 +349,13 @@ function toggleFX() {
   fxToggle.textContent = gameSettings.fxOn ? "FX ON" : "FX OFF";
 }
 
-// ⏸ Pause
-function togglePause() {
-  gamePaused = !gamePaused;
-  pauseBtn.textContent = gamePaused ? "Reprendre" : "Pause";
-  pauseOverlay.style.display = gamePaused ? "flex" : "none";
-  if (!gamePaused && gameStarted) requestAnimationFrame(gameLoop);
-}
-
 // 📊 Affichage stats
 function updateStatsDisplay() {
   document.getElementById("gamesPlayed").textContent = localStorage.getItem("gamesPlayed") || 0;
   document.getElementById("bestScore").textContent = localStorage.getItem("bestScore") || 0;
 }
 
-// ✅ Animation pulse (à ajouter dans CSS si manquant)
+// ✅ Animation pulse (si manquante)
 const style = document.createElement('style');
 style.innerHTML = `
 @keyframes pulse {
@@ -353,4 +364,4 @@ style.innerHTML = `
   100% { transform: scale(1); }
 }`;
 document.head.appendChild(style);
-  
+
