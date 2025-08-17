@@ -406,3 +406,4 @@ function showFireworksMessage() {
     margin-top: 20px;
   `;
   overlay.appendChild(msg);
+}
