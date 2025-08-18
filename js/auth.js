@@ -1,12 +1,14 @@
 // 🔹 auth.js – gestion de l'authentification pour Neon Lane Runner
-import { auth, firestore } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+import {
+  ref, set
+} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
 // 🔹 Éléments DOM
 const loginBtn = document.getElementById("loginBtn");
@@ -41,12 +43,13 @@ registerBtn?.addEventListener("click", async () => {
     const userCred = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(userCred.user, { displayName: pseudo });
 
-    // 🔹 Sauvegarde du pseudo dans Firestore
+    // 🔹 Sauvegarde du pseudo dans Realtime Database
     const uid = userCred.user.uid;
-    await setDoc(doc(firestore, "users", uid), {
-      displayName: pseudo,
-      bestScore: 0
-    }, { merge: true });
+    await set(ref(db, 'scores/' + uid), {
+      score: 0,
+      timestamp: Date.now(),
+      username: pseudo
+    });
 
     messageEl.innerText = "Compte créé ! Vous pouvez jouer 🚀";
   } catch (err) {
