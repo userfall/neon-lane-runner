@@ -56,7 +56,7 @@ let gameSettings = {
   spawnRate: 25,
   musicOn: true,
   fxOn: true,
-  lives: 3
+  lives: 5
 };
 
 // 🔐 Auth Check
