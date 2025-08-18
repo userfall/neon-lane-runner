@@ -1,5 +1,5 @@
 export let gameSettings = {
-    lives: 3,
+    lives: 5,
     gameSpeed: 5,
     spawnRate: 20,
     musicOn: true,
